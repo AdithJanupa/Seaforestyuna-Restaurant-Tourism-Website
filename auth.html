@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SeaForestuna | Login and Register</title>
+    <link rel="icon" type="image/png" href="assets/images/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: { 900: '#04070a', 800: '#0a1116', 700: '#111a21' },
+              sea: { 500: '#c8a46a', 400: '#e3c58a' },
+              sun: { 300: '#b88b4d' },
+              sand: { 100: '#f2eadc', 200: '#dcc8a6' }
+            },
+            fontFamily: {
+              display: ['Bodoni Moda', 'serif'],
+              body: ['Outfit', 'sans-serif']
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body class="text-white">
+    <header data-component="navbar"></header>
+
+    <section class="pt-32 pb-20 max-w-6xl mx-auto px-6">
+      <div class="grid lg:grid-cols-2 gap-10">
+        <div class="glass-card p-8">
+          <h2 class="display text-3xl mb-4">Login</h2>
+          <form id="loginForm" class="space-y-4">
+            <div>
+              <label class="text-sm text-white/70">Email</label>
+              <input name="email" type="email" class="input-field mt-1" required />
+            </div>
+            <div>
+              <label class="text-sm text-white/70">Password</label>
+              <input name="password" type="password" class="input-field mt-1" required />
+            </div>
+            <button class="btn-primary w-full" type="submit">Login</button>
+          </form>
+        </div>
+        <div class="glass-card p-8">
+          <h2 class="display text-3xl mb-4">Register</h2>
+          <form id="registerForm" class="space-y-4">
+            <div>
+              <label class="text-sm text-white/70">Name</label>
+              <input name="name" type="text" class="input-field mt-1" required />
+            </div>
+            <div>
+              <label class="text-sm text-white/70">Email</label>
+              <input name="email" type="email" class="input-field mt-1" required />
+            </div>
+            <div>
+              <label class="text-sm text-white/70">Password</label>
+              <input name="password" type="password" class="input-field mt-1" required />
+            </div>
+            <button class="btn-primary w-full" type="submit">Create Account</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-1 gap-10 mt-10">
+        <div class="glass-card p-8">
+          <h2 class="display text-3xl mb-4">Account Status</h2>
+          <p id="userBadge" class="text-white/70 mb-4">Not logged in</p>
+          <button id="logoutBtn" class="btn-outline">Logout</button>
+        </div>
+      </div>
+    </section>
+
+    <footer data-component="footer"></footer>
+
+    <script src="assets/js/config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script src="assets/js/firebase.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/components.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/auth.js"></script>
+  </body>
+</html>
+
+

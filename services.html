@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SeaForestuna | Services</title>
+    <link rel="icon" type="image/png" href="assets/images/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: { 900: '#04070a', 800: '#0a1116', 700: '#111a21' },
+              sea: { 500: '#c8a46a', 400: '#e3c58a' },
+              sun: { 300: '#b88b4d' },
+              sand: { 100: '#f2eadc', 200: '#dcc8a6' }
+            },
+            fontFamily: {
+              display: ['Bodoni Moda', 'serif'],
+              body: ['Outfit', 'sans-serif']
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body class="text-white">
+    <header data-component="navbar"></header>
+
+    <section class="pt-32 pb-16 max-w-6xl mx-auto px-6">
+      <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-10 items-center">
+        <div class="space-y-4">
+          <span class="badge">Experiences</span>
+          <h1 class="display text-5xl" data-content-title="services">Our Services</h1>
+          <p class="text-white/70" data-content-body="services">
+            Dining journeys, boutique stays, and curated sea adventures - all in one coastal sanctuary.
+          </p>
+        </div>
+        <div class="image-card">
+          <img data-img="servicesHero" alt="Services" />
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-6 pb-20">
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="glass-card p-6 reveal">
+          <h3 class="text-2xl display mb-2">Restaurant Dining</h3>
+          <p class="text-white/70">Signature menus with pickup, dine-in, and delivery options.</p>
+        </div>
+        <div class="glass-card p-6 reveal">
+          <h3 class="text-2xl display mb-2">Accommodation</h3>
+          <p class="text-white/70">Short-term and multi-day stays in eco-luxury suites.</p>
+        </div>
+        <div class="glass-card p-6 reveal">
+          <h3 class="text-2xl display mb-2">Boat Adventures</h3>
+          <p class="text-white/70">Guided mangrove cruises, reef snorkels, and sunset sails.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer data-component="footer"></footer>
+
+    <script src="assets/js/config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script src="assets/js/firebase.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/components.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/content.js"></script>
+  </body>
+</html>
+
+

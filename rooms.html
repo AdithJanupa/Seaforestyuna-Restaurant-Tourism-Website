@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SeaForestuna | Rooms and Stays</title>
+    <link rel="icon" type="image/png" href="assets/images/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: { 900: '#04070a', 800: '#0a1116', 700: '#111a21' },
+              sea: { 500: '#c8a46a', 400: '#e3c58a' },
+              sun: { 300: '#b88b4d' },
+              sand: { 100: '#f2eadc', 200: '#dcc8a6' }
+            },
+            fontFamily: {
+              display: ['Bodoni Moda', 'serif'],
+              body: ['Outfit', 'sans-serif']
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body class="text-white">
+    <header data-component="navbar"></header>
+
+    <section class="pt-32 pb-16 max-w-7xl mx-auto px-6">
+      <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-10 items-center">
+        <div class="space-y-4">
+          <span class="badge">Stay Program</span>
+          <h1 class="display text-5xl">Eco-Lodge Rooms and Coastal Villas</h1>
+          <p class="text-white/70">
+            Plan a restorative stay with curated amenities, dining reservations, and access to the SeaForestuna travel
+            concierge.
+          </p>
+        </div>
+        <div class="image-card">
+          <img data-img="roomsHero" alt="Room hero" />
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-6 pb-16">
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="roomList"></div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-6 pb-20" id="bookingSection">
+      <div class="glass-card p-8">
+        <div class="flex items-center gap-4 mb-6">
+          <div class="progress-step active"><span class="progress-dot"></span>Select Room</div>
+          <div class="progress-step"><span class="progress-dot"></span>Dates</div>
+          <div class="progress-step"><span class="progress-dot"></span>Confirm</div>
+        </div>
+        <h3 class="text-2xl display mb-2">Booking Details</h3>
+        <p class="text-white/70 mb-6">Selected: <span id="selectedRoom" class="text-sea-400">Choose a room</span></p>
+        <form id="roomBookingForm" class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm text-white/70">Check-in</label>
+            <input id="checkIn" name="checkIn" type="date" class="input-field mt-1" required />
+          </div>
+          <div>
+            <label class="text-sm text-white/70">Check-out</label>
+            <input id="checkOut" name="checkOut" type="date" class="input-field mt-1" required />
+          </div>
+          <div>
+            <label class="text-sm text-white/70">Guests</label>
+            <input name="guests" type="number" min="1" class="input-field mt-1" required />
+          </div>
+          <div>
+            <label class="text-sm text-white/70">Special Requests</label>
+            <input name="specialRequests" type="text" class="input-field mt-1" />
+          </div>
+          <div class="md:col-span-2">
+            <button class="btn-primary w-full" type="submit">Confirm Booking</button>
+          </div>
+        </form>
+        <div id="roomConfirmation"></div>
+      </div>
+    </section>
+
+    <footer data-component="footer"></footer>
+
+    <script src="assets/js/config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script src="assets/js/firebase.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/components.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/rooms.js"></script>
+  </body>
+</html>
+
+

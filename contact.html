@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SeaForestuna | Contact</title>
+    <link rel="icon" type="image/png" href="assets/images/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: { 900: '#04070a', 800: '#0a1116', 700: '#111a21' },
+              sea: { 500: '#c8a46a', 400: '#e3c58a' },
+              sun: { 300: '#b88b4d' },
+              sand: { 100: '#f2eadc', 200: '#dcc8a6' }
+            },
+            fontFamily: {
+              display: ['Bodoni Moda', 'serif'],
+              body: ['Outfit', 'sans-serif']
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body class="text-white">
+    <header data-component="navbar"></header>
+
+    <section class="pt-32 pb-16 max-w-6xl mx-auto px-6">
+      <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-10 items-center">
+        <div class="space-y-4">
+          <span class="badge">Connect</span>
+          <h1 class="display text-5xl">Contact SeaForestuna</h1>
+          <p class="text-white/70">Ask about reservations, custom itineraries, or group experiences.</p>
+        </div>
+        <div class="image-card">
+          <img data-img="contactHero" alt="Contact" />
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-6 pb-20 grid lg:grid-cols-2 gap-10">
+      <form id="contactForm" class="glass-card p-8 space-y-4">
+        <div>
+          <label class="text-sm text-white/70">Name</label>
+          <input name="name" type="text" class="input-field mt-1" required />
+        </div>
+        <div>
+          <label class="text-sm text-white/70">Email</label>
+          <input name="email" type="email" class="input-field mt-1" required />
+        </div>
+        <div>
+          <label class="text-sm text-white/70">Phone</label>
+          <input name="phone" type="text" class="input-field mt-1" />
+        </div>
+        <div>
+          <label class="text-sm text-white/70">Message</label>
+          <textarea name="message" rows="4" class="input-field mt-1" required></textarea>
+        </div>
+        <button class="btn-primary w-full" type="submit">Send Message</button>
+      </form>
+      <div class="space-y-6">
+        <div class="glass-card p-6">
+          <h3 class="text-2xl display mb-2">Visit Us</h3>
+          <p class="text-white/70">Coastal Forest Bay, Seafront Drive, Azure Coast</p>
+          <p class="text-white/70 mt-2">+1 (555) 482-0119</p>
+          <p class="text-white/70">hello@seaforestuna.com</p>
+        </div>
+        <div class="image-card">
+          <img data-img="map" alt="Map" />
+        </div>
+      </div>
+    </section>
+
+    <footer data-component="footer"></footer>
+
+    <script src="assets/js/config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script src="assets/js/firebase.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/components.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/contact.js"></script>
+  </body>
+</html>
+
+

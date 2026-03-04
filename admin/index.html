@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SeaForestuna | Admin Access</title>
+    <link rel="icon" type="image/png" href="../assets/images/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: { 900: '#04070a', 800: '#0a1116', 700: '#111a21' },
+              sea: { 500: '#c8a46a', 400: '#e3c58a' },
+              sun: { 300: '#b88b4d' },
+              sand: { 100: '#f2eadc', 200: '#dcc8a6' }
+            },
+            fontFamily: {
+              display: ['Bodoni Moda', 'serif'],
+              body: ['Outfit', 'sans-serif']
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+  </head>
+  <body class="text-white">
+    <section class="min-h-screen flex items-center justify-center px-6 py-20">
+      <div class="max-w-6xl w-full grid lg:grid-cols-[0.95fr_1.05fr] gap-10">
+        <div class="space-y-6">
+          <div class="flex items-center gap-4">
+            <span class="brand-logo-wrap">
+              <img src="../assets/images/logo.png" alt="SeaForestuna logo" class="brand-logo" />
+            </span>
+            <div>
+              <p class="text-xs uppercase tracking-[0.3em] text-white/60">SeaForestuna</p>
+              <p class="display text-lg">Admin Portal</p>
+            </div>
+          </div>
+          <h1 class="display text-4xl md:text-5xl">Admin Command Center</h1>
+          <p class="text-white/70 text-lg">
+            This entry is reserved for authorized SeaForestuna staff only. Use the credentials provided by the
+            operations team to access bookings, menus, and content.
+          </p>
+          <div class="glass-card p-6 space-y-3">
+            <p class="text-sm text-white/70">Admin access includes:</p>
+            <ul class="grid gap-2 text-sm text-white/80">
+              <li>• Live order and booking management</li>
+              <li>• Real-time room and boat availability controls</li>
+              <li>• Content and experience updates</li>
+            </ul>
+          </div>
+          <a href="../index.html" class="btn-outline w-fit">Return to Guest Site</a>
+        </div>
+
+        <div class="glass-card p-8">
+          <h2 class="display text-3xl mb-4">Admin Login</h2>
+          <p class="text-white/70 text-sm mb-6">Enter the admin email and password supplied by SeaForestuna.</p>
+          <form id="adminLoginForm" class="space-y-4">
+            <div>
+              <label class="text-sm text-white/70">Admin Email</label>
+              <input name="email" type="email" class="input-field mt-1" required />
+            </div>
+            <div>
+              <label class="text-sm text-white/70">Password</label>
+              <input name="password" type="password" class="input-field mt-1" required />
+            </div>
+            <button class="btn-primary w-full" type="submit">Enter Dashboard</button>
+          </form>
+          <p id="adminStatus" class="text-sm text-white/60 mt-4"></p>
+        </div>
+      </div>
+    </section>
+
+    <script src="../assets/js/config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script src="../assets/js/firebase.js"></script>
+    <script src="../assets/js/utils.js"></script>
+    <script src="../assets/js/components.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/admin-login.js"></script>
+  </body>
+</html>

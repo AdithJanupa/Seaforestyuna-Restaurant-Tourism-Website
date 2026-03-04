@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SeaForestuna | Admin Dashboard</title>
+    <link rel="icon" type="image/png" href="assets/images/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: { 900: '#04070a', 800: '#0a1116', 700: '#111a21' },
+              sea: { 500: '#c8a46a', 400: '#e3c58a' },
+              sun: { 300: '#b88b4d' },
+              sand: { 100: '#f2eadc', 200: '#dcc8a6' }
+            },
+            fontFamily: {
+              display: ['Bodoni Moda', 'serif'],
+              body: ['Outfit', 'sans-serif']
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body class="text-white">
+    <header data-component="navbar"></header>
+
+    <section class="pt-32 pb-10 max-w-7xl mx-auto px-6">
+      <h1 class="display text-5xl mb-4">Admin Dashboard</h1>
+      <p class="text-white/70">Manage menu, bookings, and content across the SeaForestuna journey.</p>
+    </section>
+
+    <section id="adminGate" class="max-w-4xl mx-auto px-6 pb-20 hidden">
+      <div class="glass-card p-8 text-center">
+        <h2 class="display text-3xl mb-3">Admin Access Required</h2>
+        <p class="text-white/70 mb-6">Please login with an admin account to access the dashboard.</p>
+        <a href="auth.html" class="btn-primary">Go to Login</a>
+      </div>
+    </section>
+
+    <section id="adminContent" class="max-w-7xl mx-auto px-6 pb-20 hidden">
+      <div class="flex flex-wrap gap-3 mb-6">
+        <button class="tab-pill active" data-tab-btn="menu">Menu</button>
+        <button class="tab-pill" data-tab-btn="orders">Orders</button>
+        <button class="tab-pill" data-tab-btn="rooms">Rooms</button>
+        <button class="tab-pill" data-tab-btn="roomBookings">Room Bookings</button>
+        <button class="tab-pill" data-tab-btn="boats">Boat Rides</button>
+        <button class="tab-pill" data-tab-btn="boatBookings">Boat Bookings</button>
+        <button class="tab-pill" data-tab-btn="content">Content</button>
+      </div>
+
+      <div data-section="menu">
+        <div class="flex flex-wrap justify-between gap-4 mb-4">
+          <input id="menuSearch" class="input-field max-w-xs" placeholder="Search menu" />
+          <button class="btn-primary" id="menuAdd">Add Menu Item</button>
+        </div>
+        <div class="table-wrap overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="menuTable"></tbody>
+          </table>
+        </div>
+        <div id="menuPagination" class="mt-4"></div>
+      </div>
+
+      <div data-section="orders" class="hidden">
+        <div class="flex flex-wrap gap-4 mb-4">
+          <input id="ordersSearch" class="input-field max-w-xs" placeholder="Search orders" />
+          <select id="ordersFilter" class="input-field max-w-xs">
+            <option>All</option>
+            <option>Pending</option>
+            <option>Accepted</option>
+            <option>Preparing</option>
+            <option>Ready</option>
+            <option>Completed</option>
+            <option>Cancelled</option>
+          </select>
+        </div>
+        <div class="table-wrap overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Guest</th>
+                <th>Type</th>
+                <th>Scheduled</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTable"></tbody>
+          </table>
+        </div>
+        <div id="ordersPagination" class="mt-4"></div>
+      </div>
+
+      <div data-section="rooms" class="hidden">
+        <div class="flex flex-wrap justify-between gap-4 mb-4">
+          <input id="roomsSearch" class="input-field max-w-xs" placeholder="Search rooms" />
+          <button class="btn-primary" id="roomsAdd">Add Room</button>
+        </div>
+        <div class="table-wrap overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Capacity</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="roomsTable"></tbody>
+          </table>
+        </div>
+        <div id="roomsPagination" class="mt-4"></div>
+      </div>
+
+      <div data-section="roomBookings" class="hidden">
+        <div class="flex flex-wrap gap-4 mb-4">
+          <input id="roomBookingsSearch" class="input-field max-w-xs" placeholder="Search bookings" />
+          <select id="roomBookingsFilter" class="input-field max-w-xs">
+            <option>All</option>
+            <option>Pending</option>
+            <option>Confirmed</option>
+            <option>Checked-in</option>
+            <option>Checked-out</option>
+            <option>Cancelled</option>
+          </select>
+        </div>
+        <div class="table-wrap overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Ref</th>
+                <th>Room</th>
+                <th>Guest</th>
+                <th>Dates</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="roomBookingsTable"></tbody>
+          </table>
+        </div>
+        <div id="roomBookingsPagination" class="mt-4"></div>
+      </div>
+
+      <div data-section="boats" class="hidden">
+        <div class="flex flex-wrap justify-between gap-4 mb-4">
+          <input id="boatsSearch" class="input-field max-w-xs" placeholder="Search boat rides" />
+          <button class="btn-primary" id="boatsAdd">Add Boat Ride</button>
+        </div>
+        <div class="table-wrap overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Duration</th>
+                <th>Capacity</th>
+                <th>Price</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="boatsTable"></tbody>
+          </table>
+        </div>
+        <div id="boatsPagination" class="mt-4"></div>
+      </div>
+
+      <div data-section="boatBookings" class="hidden">
+        <div class="flex flex-wrap gap-4 mb-4">
+          <input id="boatBookingsSearch" class="input-field max-w-xs" placeholder="Search boat bookings" />
+          <select id="boatBookingsFilter" class="input-field max-w-xs">
+            <option>All</option>
+            <option>Pending</option>
+            <option>Confirmed</option>
+            <option>Completed</option>
+            <option>Cancelled</option>
+          </select>
+        </div>
+        <div class="table-wrap overflow-x-auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Ref</th>
+                <th>Boat</th>
+                <th>Guest</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="boatBookingsTable"></tbody>
+          </table>
+        </div>
+        <div id="boatBookingsPagination" class="mt-4"></div>
+      </div>
+
+      <div data-section="content" class="hidden">
+        <form id="contentForm" class="glass-card p-8 space-y-4">
+          <div>
+            <label class="text-sm text-white/70">About Title</label>
+            <input id="aboutTitle" class="input-field mt-1" />
+          </div>
+          <div>
+            <label class="text-sm text-white/70">About Body</label>
+            <textarea id="aboutBody" class="input-field mt-1" rows="4"></textarea>
+          </div>
+          <div>
+            <label class="text-sm text-white/70">Services Title</label>
+            <input id="servicesTitle" class="input-field mt-1" />
+          </div>
+          <div>
+            <label class="text-sm text-white/70">Services Body</label>
+            <textarea id="servicesBody" class="input-field mt-1" rows="4"></textarea>
+          </div>
+          <button class="btn-primary" type="submit">Update Content</button>
+        </form>
+      </div>
+    </section>
+
+    <div id="adminModal" class="modal-backdrop">
+      <div class="modal-panel" id="adminModalContent"></div>
+    </div>
+
+    <footer data-component="footer"></footer>
+
+    <script src="assets/js/config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script src="assets/js/firebase.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/components.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/admin.js"></script>
+  </body>
+</html>
+
+
