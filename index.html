@@ -36,319 +36,105 @@
     <header data-component="navbar"></header>
 
     <section
-      class="relative min-h-screen flex items-center"
+      class="relative min-h-[78vh] flex items-center"
       data-bg="hero"
-      data-parallax
       style="background-size: cover; background-position: center;"
     >
       <div class="hero-layer"></div>
-      <div class="hero-orb hero-orb--a"></div>
-      <div class="hero-orb hero-orb--b"></div>
-      <div class="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-20 w-full">
-        <div class="grid lg:grid-cols-[1.1fr_0.9fr] gap-14 items-start">
-          <div class="space-y-7">
-            <span class="badge">Coastal Restaurant Tourism</span>
-            <h1 class="display text-5xl md:text-6xl">Dine, Stay, and Sail Through the SeaForestuna Atlas</h1>
+      <div class="relative z-10 max-w-7xl mx-auto px-6 pt-28 pb-16 w-full">
+        <div class="grid lg:grid-cols-2 gap-10 items-center">
+          <div class="space-y-6">
+            <span class="badge">Week 3 Frontend Preview</span>
+            <h1 class="display text-5xl md:text-6xl">SeaForestuna Core Interface Is Ready for Demo</h1>
             <p class="text-lg text-white/70">
-              A large-scale destination experience: reservation-first dining, eco-lodge stays, and curated lagoon rides
-              designed for travelers who want everything in one seamless journey.
+              This checkpoint focuses on page flow, branding, and navigation structure. Full booking interactions and
+              final polish are scheduled for Week 4.
             </p>
             <div class="flex flex-wrap gap-4">
-              <a href="menu.html" class="btn-primary">Order Food</a>
-              <a href="rooms.html" class="btn-outline">Book a Room</a>
-              <a href="boat.html" class="btn-outline">Reserve a Boat Ride</a>
-            </div>
-            <div class="grid sm:grid-cols-3 gap-4 mt-8">
-              <div class="stat-tile">
-                <p class="text-xs uppercase tracking-[0.3em] text-white/60">Dine</p>
-                <p class="text-2xl display">32</p>
-                <p class="text-xs text-white/60">Signature plates</p>
-              </div>
-              <div class="stat-tile">
-                <p class="text-xs uppercase tracking-[0.3em] text-white/60">Stay</p>
-                <p class="text-2xl display">18</p>
-                <p class="text-xs text-white/60">Eco-luxury rooms</p>
-              </div>
-              <div class="stat-tile">
-                <p class="text-xs uppercase tracking-[0.3em] text-white/60">Sail</p>
-                <p class="text-2xl display">9</p>
-                <p class="text-xs text-white/60">Daily sea journeys</p>
-              </div>
+              <a href="menu.html" class="btn-primary">Menu Page</a>
+              <a href="rooms.html" class="btn-outline">Rooms Page</a>
+              <a href="boat.html" class="btn-outline">Boat Page</a>
             </div>
           </div>
 
-          <div class="glass-card p-6 sticky-booking" data-quick-book>
-            <div class="flex gap-3 mb-4">
-              <button class="tab-pill active" data-tab="food">Food</button>
-              <button class="tab-pill" data-tab="rooms">Rooms</button>
-              <button class="tab-pill" data-tab="boat">Boat</button>
-            </div>
-            <div data-pane="food">
-              <form data-target="menu.html" class="space-y-4">
-                <div>
-                  <label class="text-sm text-white/70">Service Type</label>
-                  <select name="orderType" class="input-field select-field mt-1">
-                    <option value="pickup">Pickup</option>
-                    <option value="dine-in">Dine-in</option>
-                    <option value="delivery">Delivery</option>
-                  </select>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                  <div>
-                    <label class="text-sm text-white/70">Date</label>
-                    <div class="input-icon mt-1">
-                      <input name="date" type="date" class="input-field" required />
-                      <span class="input-icon__right" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path
-                            d="M7 3v2M17 3v2M4 8h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"
-                            stroke="currentColor"
-                            stroke-width="1.6"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <label class="text-sm text-white/70">Time</label>
-                    <div class="input-icon mt-1">
-                      <select name="time" class="input-field select-field select-field--no-chevron" data-time-slots></select>
-                      <span class="input-icon__right" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path
-                            d="M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"
-                            stroke="currentColor"
-                            stroke-width="1.6"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <button class="btn-primary w-full" type="submit">Plan Dining</button>
-              </form>
-            </div>
-            <div data-pane="rooms" class="hidden">
-              <form data-target="rooms.html" class="space-y-4">
-                <div class="grid grid-cols-2 gap-3">
-                  <div>
-                    <label class="text-sm text-white/70">Check-in</label>
-                    <div class="input-icon mt-1">
-                      <input name="checkIn" type="date" class="input-field" required />
-                      <span class="input-icon__right" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path
-                            d="M7 3v2M17 3v2M4 8h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"
-                            stroke="currentColor"
-                            stroke-width="1.6"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <label class="text-sm text-white/70">Check-out</label>
-                    <div class="input-icon mt-1">
-                      <input name="checkOut" type="date" class="input-field" required />
-                      <span class="input-icon__right" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none">
-                          <path
-                            d="M7 3v2M17 3v2M4 8h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"
-                            stroke="currentColor"
-                            stroke-width="1.6"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <label class="text-sm text-white/70">Guests</label>
-                  <input name="guests" type="number" min="1" value="2" class="input-field mt-1" />
-                </div>
-                <button class="btn-primary w-full" type="submit">Search Rooms</button>
-              </form>
-            </div>
-            <div data-pane="boat" class="hidden">
-              <form data-target="boat.html" class="space-y-4">
-                <div>
-                  <label class="text-sm text-white/70">Date</label>
-                  <div class="input-icon mt-1">
-                    <input name="date" type="date" class="input-field" required />
-                    <span class="input-icon__right" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M7 3v2M17 3v2M4 8h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"
-                          stroke="currentColor"
-                          stroke-width="1.6"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label class="text-sm text-white/70">Time</label>
-                  <div class="input-icon mt-1">
-                    <select name="time" class="input-field select-field select-field--no-chevron" data-time-slots></select>
-                    <span class="input-icon__right" aria-hidden="true">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"
-                          stroke="currentColor"
-                          stroke-width="1.6"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        />
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <label class="text-sm text-white/70">Guests</label>
-                  <input name="guests" type="number" min="1" value="2" class="input-field mt-1" />
-                </div>
-                <button class="btn-primary w-full" type="submit">Find Boat Ride</button>
-              </form>
+          <div class="glass-card p-6">
+            <h2 class="display text-2xl mb-4">Current Week Scope</h2>
+            <ul class="space-y-3 text-white/70">
+              <li>Home, menu, rooms, and boat pages connected</li>
+              <li>Reusable navbar and footer components working</li>
+              <li>Project visual identity and responsive layout applied</li>
+            </ul>
+            <div class="mt-6 p-4 rounded-xl border border-white/10 bg-black/20">
+              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Week 4 Target</p>
+              <p class="mt-2 text-white/80">
+                Finalize advanced booking widgets, form behavior, and full end-to-end frontend presentation.
+              </p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-6 py-20">
+    <section class="max-w-7xl mx-auto px-6 py-16">
+      <h2 class="display text-4xl mb-8">Week 3 Deliverables</h2>
       <div class="grid md:grid-cols-3 gap-6">
         <div class="journey-card reveal">
-          <p class="text-xs uppercase tracking-[0.3em] text-white/60">Arrival</p>
-          <h3 class="text-2xl display">Sunset Table</h3>
-          <p class="text-white/70">Reserve the chef's coastal menu and settle into a moonlit dining terrace.</p>
+          <p class="text-xs uppercase tracking-[0.3em] text-white/60">Structure</p>
+          <h3 class="text-2xl display">Core Pages</h3>
+          <p class="text-white/70">Main pages are built and linked for smooth navigation during the review.</p>
         </div>
         <div class="journey-card reveal">
-          <p class="text-xs uppercase tracking-[0.3em] text-white/60">Day Two</p>
-          <h3 class="text-2xl display">Lagoon Cruise</h3>
-          <p class="text-white/70">Navigate mangroves, reef coves, and private swim stops.</p>
+          <p class="text-xs uppercase tracking-[0.3em] text-white/60">UI Theme</p>
+          <h3 class="text-2xl display">Brand Styling</h3>
+          <p class="text-white/70">A consistent visual style is applied across buttons, cards, and content areas.</p>
         </div>
         <div class="journey-card reveal">
-          <p class="text-xs uppercase tracking-[0.3em] text-white/60">Departure</p>
-          <h3 class="text-2xl display">Forest Brunch</h3>
-          <p class="text-white/70">Slow mornings with botanical plates and sea-breeze coffee rituals.</p>
+          <p class="text-xs uppercase tracking-[0.3em] text-white/60">Readiness</p>
+          <h3 class="text-2xl display">Demo Friendly</h3>
+          <p class="text-white/70">Layout and content are stable enough for campus Week 3 presentation.</p>
         </div>
       </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-6 py-16 grid lg:grid-cols-2 gap-12 items-center">
-      <div class="space-y-6">
-        <span class="badge">Culinary Atlas</span>
-        <h2 class="display text-4xl">Signature Plates Built for Travelers</h2>
-        <p class="text-white/70">
-          From reef-to-table to forest botanicals, every menu is crafted for discovery. Build a reservation or pre-order
-          for a seamless arrival.
-        </p>
-        <div class="flex flex-wrap gap-4">
-          <a href="menu.html" class="btn-primary">Explore Menu</a>
-          <a href="menu.html" class="btn-outline">Order Ahead</a>
-        </div>
-      </div>
-      <div class="grid md:grid-cols-2 gap-4">
-        <div class="image-card reveal">
-          <img data-img="dishA" alt="Signature dish" />
-        </div>
-        <div class="image-card reveal">
-          <img data-img="dishB" alt="Forest salad" />
-        </div>
-      </div>
-    </section>
-
-    <section class="max-w-7xl mx-auto px-6 py-16 grid lg:grid-cols-[0.95fr_1.05fr] gap-12 items-center">
+    <section class="max-w-7xl mx-auto px-6 py-16 grid lg:grid-cols-[0.95fr_1.05fr] gap-10 items-center">
       <div class="image-card reveal">
-        <img data-img="rooms" alt="SeaForestuna rooms" />
+        <img data-img="rooms" alt="SeaForestuna rooms preview" />
       </div>
-      <div class="space-y-6">
-        <span class="badge">Stay Program</span>
-        <h2 class="display text-4xl">Eco-Lodge Suites Curated for Slow Travel</h2>
-        <p class="text-white/70">
-          Choose canopy suites, lagoon lodges, or ocean villas. Each stay includes dining reservations and curated
-          itineraries.
-        </p>
-        <div class="flex flex-wrap gap-4">
-          <a href="rooms.html" class="btn-primary">Book Rooms</a>
-          <a href="services.html" class="btn-outline">View Amenities</a>
-        </div>
-      </div>
-    </section>
-
-    <section class="max-w-7xl mx-auto px-6 py-16 grid lg:grid-cols-2 gap-12 items-center">
-      <div class="space-y-6 order-2 lg:order-1">
-        <span class="badge">Sea Journeys</span>
-        <h2 class="display text-4xl">Private Lagoon Rides and Reef Escapes</h2>
-        <p class="text-white/70">
-          Select sunrise, reef, and twilight routes with guided storytelling, safety briefings, and onboard tasting
-          moments.
-        </p>
-        <div class="flex flex-wrap gap-4">
-          <a href="boat.html" class="btn-primary">Reserve Boat Ride</a>
-          <a href="contact.html" class="btn-outline">Custom Charters</a>
-        </div>
-      </div>
-      <div class="image-card reveal order-1 lg:order-2">
-        <img data-img="boat" alt="Boat ride" />
-      </div>
-    </section>
-
-    <section class="max-w-7xl mx-auto px-6 py-16">
-      <div class="grid md:grid-cols-3 gap-6">
-        <div class="glass-card p-6 reveal">
-          <p class="text-sm text-white/70">"The boat crew curated a perfect sunset itinerary. Everything was seamless."</p>
-          <p class="text-white/90 mt-4">- Alina M.</p>
-        </div>
-        <div class="glass-card p-6 reveal">
-          <p class="text-sm text-white/70">"Signature dishes felt like a travel journal entry on every plate."</p>
-          <p class="text-white/90 mt-4">- Jordan L.</p>
-        </div>
-        <div class="glass-card p-6 reveal">
-          <p class="text-sm text-white/70">"Rooms were serene, and the itinerary concierge made planning effortless."</p>
-          <p class="text-white/90 mt-4">- Priya S.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="max-w-7xl mx-auto px-6 py-16">
-      <div class="grid lg:grid-cols-2 gap-8 items-center">
-        <div class="glass-card p-6 reveal">
-          <h3 class="text-2xl mb-3 display">Safety, Sustainability, Storytelling</h3>
-          <p class="text-white/70">
-            Licensed guides, coastal-safe vessels, and eco-certified hospitality practices ensure every journey remains
-            responsible.
-          </p>
-          <div class="mt-6 grid sm:grid-cols-3 gap-3">
-            <div class="badge">Licensed crew</div>
-            <div class="badge">Eco-certified</div>
-            <div class="badge">Guest concierge</div>
+      <div class="glass-card p-6 reveal">
+        <span class="badge">Module Status</span>
+        <h2 class="display text-3xl mt-4 mb-4">Progress Snapshot</h2>
+        <div class="space-y-3 text-white/80">
+          <div class="flex items-center justify-between border-b border-white/10 pb-2">
+            <span>Navigation + Layout</span>
+            <span class="text-sea-400">Completed</span>
           </div>
-        </div>
-        <div class="image-card reveal">
-          <img data-img="map" alt="Map" />
+          <div class="flex items-center justify-between border-b border-white/10 pb-2">
+            <span>Page Content Sections</span>
+            <span class="text-sea-400">Completed</span>
+          </div>
+          <div class="flex items-center justify-between border-b border-white/10 pb-2">
+            <span>Advanced Booking Widget</span>
+            <span class="text-white/60">Week 4</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Final UI Polish + Review</span>
+            <span class="text-white/60">Week 4</span>
+          </div>
         </div>
       </div>
     </section>
 
     <section class="max-w-7xl mx-auto px-6 pb-20">
       <div class="glass-card p-8 text-center reveal">
-        <h2 class="display text-4xl mb-3">Plan a Complete SeaForestuna Journey</h2>
-        <p class="text-white/70 mb-6">Combine dining, stays, and sea tours in a single booking flow.</p>
+        <h2 class="display text-4xl mb-3">Next Step: Complete Frontend in Week 4</h2>
+        <p class="text-white/70 mb-6">
+          This version is intentionally simplified for Week 3. Full interaction depth and advanced frontend behavior
+          will be finalized in the next milestone.
+        </p>
         <div class="flex flex-wrap justify-center gap-4">
-          <a href="menu.html" class="btn-primary">Order Food</a>
-          <a href="rooms.html" class="btn-outline">Book a Room</a>
-          <a href="boat.html" class="btn-outline">Reserve a Boat Ride</a>
+          <a href="services.html" class="btn-primary">View Services</a>
+          <a href="about.html" class="btn-outline">Project Story</a>
+          <a href="contact.html" class="btn-outline">Contact Page</a>
         </div>
       </div>
     </section>
@@ -365,5 +151,3 @@
     <script src="assets/js/main.js"></script>
   </body>
 </html>
-
-
