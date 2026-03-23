@@ -5,6 +5,8 @@ const state = {
   roomBookings: [],
   boats: [],
   boatBookings: [],
+  inquiries: [],
+  ratings: [],
   content: []
 };
 
@@ -14,10 +16,77 @@ const pagination = {
   rooms: 1,
   roomBookings: 1,
   boats: 1,
-  boatBookings: 1
+  boatBookings: 1,
+  inquiries: 1,
+  ratings: 1
 };
 
 const PAGE_SIZE = 6;
+const ORDER_STATUSES = ['Pending', 'Accepted', 'Preparing', 'Ready', 'Completed', 'Cancelled'];
+const ROOM_BOOKING_STATUSES = ['Pending', 'Confirmed', 'Checked-in', 'Checked-out', 'Cancelled'];
+const BOAT_BOOKING_STATUSES = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
+const INQUIRY_STATUSES = ['New', 'In Progress', 'Replied', 'Closed'];
+const INQUIRY_TYPES = ['General Inquiry', 'Dining', 'Stay', 'Boat Ride', 'Private Event', 'Website'];
+const INQUIRY_SOURCES = ['Contact Page', 'Ratings Page', 'Admin Dashboard', 'Walk-in', 'WhatsApp'];
+const RATING_STATUSES = ['Pending', 'Published', 'Hidden'];
+const RATING_VISIT_TYPES = ['Dining', 'Stay', 'Boat Ride', 'Website', 'General'];
+const RATING_SOURCES = ['Ratings Page', 'Contact Page', 'Admin Dashboard', 'Manual Entry'];
+
+const escapeHtml = (value) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const truncateText = (value, max = 88) => {
+  const text = String(value || '').trim();
+  if (text.length <= max) return text;
+  return `${text.slice(0, max - 1)}...`;
+};
+
+const formatDateTime = (value) => {
+  if (!value) return '--';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '--';
+  return date.toLocaleString('en-LK');
+};
+
+const formatDateOnly = (value) => {
+  if (!value) return '--';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '--';
+  return date.toLocaleDateString('en-LK');
+};
+
+const renderEmptyRow = (colspan, label) => `
+  <tr>
+    <td colspan="${colspan}" class="text-white/55">${escapeHtml(label)}</td>
+  </tr>
+`;
+
+const renderStatusBadge = (label) => `<span class="badge">${escapeHtml(label || '--')}</span>`;
+
+const renderStars = (value) => {
+  const rating = Math.max(0, Math.min(5, Number(value) || 0));
+  const stars = Array.from({ length: 5 }, (_, index) => (index < rating ? '&#9733;' : '&#9734;')).join('');
+  return `<span class="text-sea-400 whitespace-nowrap tracking-[0.18em]">${stars}</span>`;
+};
+
+const renderAdminActions = (type, id) => `
+  <button class="text-sea-400 text-sm" data-edit="${type}" data-id="${escapeHtml(id)}">Edit</button>
+  <button class="text-red-300 text-sm ml-2" data-delete="${type}" data-id="${escapeHtml(id)}">Delete</button>
+`;
+
+const renderRatingAdminActions = (rating) => `
+  <button class="text-sea-400 text-sm" data-rating-visibility="${escapeHtml(rating._id)}" data-next-status="${rating.status === 'Hidden' ? 'Published' : 'Hidden'}">
+    ${rating.status === 'Hidden' ? 'Show' : 'Hide'}
+  </button>
+  <button class="text-red-300 text-sm ml-2" data-delete="rating" data-id="${escapeHtml(rating._id)}">Delete</button>
+`;
+
+const adminApiFetch = (path, options = {}) => SF_UTILS.apiFetch(path, { ...options, authMode: 'admin' });
 
 const setActiveSection = (id) => {
   document.querySelectorAll('[data-section]').forEach((section) => {
@@ -37,7 +106,7 @@ const initTabs = () => {
 
 const ensureAdmin = async () => {
   try {
-    const data = await SF_UTILS.apiFetch('/api/auth/me');
+    const data = await adminApiFetch('/api/auth/me');
     if (data.user.role !== 'admin') throw new Error('Admin access required');
     document.getElementById('adminGate').classList.add('hidden');
     document.getElementById('adminContent').classList.remove('hidden');
@@ -53,14 +122,16 @@ const ensureAdmin = async () => {
 const loadAll = async () => {
   try {
     SF_UI.showLoader();
-    const [menu, orders, rooms, roomBookings, boats, boatBookings, content] = await Promise.all([
-      SF_UTILS.apiFetch('/api/menu'),
-      SF_UTILS.apiFetch('/api/orders'),
-      SF_UTILS.apiFetch('/api/rooms'),
-      SF_UTILS.apiFetch('/api/room-bookings'),
-      SF_UTILS.apiFetch('/api/boats'),
-      SF_UTILS.apiFetch('/api/boat-bookings'),
-      SF_UTILS.apiFetch('/api/content')
+    const [menu, orders, rooms, roomBookings, boats, boatBookings, inquiries, ratings, content] = await Promise.all([
+      adminApiFetch('/api/menu'),
+      adminApiFetch('/api/orders'),
+      adminApiFetch('/api/rooms'),
+      adminApiFetch('/api/room-bookings'),
+      adminApiFetch('/api/boats'),
+      adminApiFetch('/api/boat-bookings'),
+      adminApiFetch('/api/inquiries/admin'),
+      adminApiFetch('/api/ratings/admin'),
+      adminApiFetch('/api/content')
     ]);
     state.menu = menu;
     state.orders = orders;
@@ -68,10 +139,12 @@ const loadAll = async () => {
     state.roomBookings = roomBookings;
     state.boats = boats;
     state.boatBookings = boatBookings;
+    state.inquiries = inquiries;
+    state.ratings = ratings;
     state.content = content;
     renderAll();
   } catch (error) {
-    SF_UI.showToast(error.message, 'error');
+    SF_UI.showToast(error.message || 'Unable to load admin data', 'error');
   } finally {
     SF_UI.hideLoader();
   }
@@ -110,35 +183,82 @@ const openModal = (title, fields, onSubmit) => {
   const content = document.getElementById('adminModalContent');
   if (!modal || !content) return;
 
-  content.innerHTML = `
-    <h3 class="text-2xl mb-4">${title}</h3>
-    <form id="adminModalForm" class="space-y-4">
-      ${fields
-        .map((field) => {
-          if (field.type === 'textarea') {
-            return `
-              <div>
-                <label class="text-sm text-white/70">${field.label}</label>
-                <textarea name="${field.name}" class="input-field mt-1" rows="3">${field.value || ''}</textarea>
-              </div>
-            `;
-          }
-          if (field.type === 'checkbox') {
-            return `
-              <label class="flex items-center gap-3 text-sm">
-                <input type="checkbox" name="${field.name}" ${field.value ? 'checked' : ''} />
-                ${field.label}
-              </label>
-            `;
-          }
-          return `
-            <div>
-              <label class="text-sm text-white/70">${field.label}</label>
-              <input type="${field.type || 'text'}" name="${field.name}" class="input-field mt-1" value="${field.value || ''}" />
-            </div>
-          `;
+  const renderField = (field) => {
+    const requiredAttr = field.required ? 'required' : '';
+    const minAttr = field.min !== undefined ? `min="${escapeHtml(field.min)}"` : '';
+    const maxAttr = field.max !== undefined ? `max="${escapeHtml(field.max)}"` : '';
+    const stepAttr = field.step !== undefined ? `step="${escapeHtml(field.step)}"` : '';
+    const placeholderAttr = field.placeholder ? `placeholder="${escapeHtml(field.placeholder)}"` : '';
+    const rowsAttr = field.rows !== undefined ? field.rows : 3;
+
+    if (field.type === 'textarea') {
+      return `
+        <div>
+          <label class="text-sm text-white/70">${escapeHtml(field.label)}</label>
+          <textarea name="${escapeHtml(field.name)}" class="input-field mt-1" rows="${rowsAttr}" ${requiredAttr} ${placeholderAttr}>${escapeHtml(
+            field.value || ''
+          )}</textarea>
+        </div>
+      `;
+    }
+
+    if (field.type === 'checkbox') {
+      return `
+        <label class="flex items-center gap-3 text-sm">
+          <input type="checkbox" name="${escapeHtml(field.name)}" ${field.value ? 'checked' : ''} />
+          ${escapeHtml(field.label)}
+        </label>
+      `;
+    }
+
+    if (field.type === 'select') {
+      const options = (field.options || [])
+        .map((option) => {
+          const optionValue = typeof option === 'string' ? option : option.value;
+          const optionLabel = typeof option === 'string' ? option : option.label;
+          return `<option value="${escapeHtml(optionValue)}" ${String(optionValue) === String(field.value) ? 'selected' : ''}>${escapeHtml(
+            optionLabel
+          )}</option>`;
         })
-        .join('')}
+        .join('');
+
+      return `
+        <div>
+          <label class="text-sm text-white/70">${escapeHtml(field.label)}</label>
+          <select name="${escapeHtml(field.name)}" class="input-field select-field mt-1" ${requiredAttr}>
+            ${options}
+          </select>
+        </div>
+      `;
+    }
+
+    return `
+      <div>
+        <label class="text-sm text-white/70">${escapeHtml(field.label)}</label>
+        <input
+          type="${escapeHtml(field.type || 'text')}"
+          name="${escapeHtml(field.name)}"
+          class="input-field mt-1"
+          value="${escapeHtml(field.value || '')}"
+          ${requiredAttr}
+          ${minAttr}
+          ${maxAttr}
+          ${stepAttr}
+          ${placeholderAttr}
+        />
+      </div>
+    `;
+  };
+
+  const closeModal = () => {
+    modal.classList.remove('active');
+    content.innerHTML = '';
+  };
+
+  content.innerHTML = `
+    <h3 class="text-2xl mb-4">${escapeHtml(title)}</h3>
+    <form id="adminModalForm" class="space-y-4">
+      ${fields.map(renderField).join('')}
       <div class="flex justify-end gap-3">
         <button type="button" class="btn-outline" id="modalCancel">Cancel</button>
         <button type="submit" class="btn-primary">Save</button>
@@ -147,8 +267,8 @@ const openModal = (title, fields, onSubmit) => {
   `;
 
   modal.classList.add('active');
-  document.getElementById('modalCancel').addEventListener('click', () => modal.classList.remove('active'));
-  document.getElementById('adminModalForm').addEventListener('submit', (event) => {
+  document.getElementById('modalCancel').addEventListener('click', closeModal);
+  document.getElementById('adminModalForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const formData = Object.fromEntries(new FormData(event.target).entries());
     fields
@@ -156,8 +276,7 @@ const openModal = (title, fields, onSubmit) => {
       .forEach((field) => {
         formData[field.name] = event.target[field.name].checked;
       });
-    modal.classList.remove('active');
-    onSubmit(formData);
+    await onSubmit(formData, closeModal);
   });
 };
 
@@ -386,16 +505,216 @@ const renderBoatBookingsSection = () => {
   renderPagination('boatBookingsPagination', 'boatBookings', totalPages);
 };
 
+const renderRatingsSummaryCards = () => {
+  const container = document.getElementById('ratingsSummaryCards');
+  if (!container) return;
+
+  const publishedRatings = state.ratings.filter((rating) => rating.status === 'Published');
+  const averageRating = publishedRatings.length
+    ? (publishedRatings.reduce((sum, rating) => sum + (Number(rating.rating) || 0), 0) / publishedRatings.length).toFixed(1)
+    : '0.0';
+  const featuredRatings = publishedRatings.filter((rating) => rating.isFeatured).length;
+  const openInquiries = state.inquiries.filter((inquiry) => inquiry.status === 'New' || inquiry.status === 'In Progress').length;
+
+  container.innerHTML = `
+    <div class="glass-card p-5">
+      <p class="text-xs uppercase tracking-[0.26em] text-white/55">Average Rating</p>
+      <div class="flex items-end justify-between gap-4 mt-3">
+        <div>
+          <p class="display text-4xl">${escapeHtml(averageRating)}</p>
+          <p class="text-white/65 mt-1">${renderStars(Number(averageRating))}</p>
+        </div>
+        <p class="text-sm text-white/55">${escapeHtml(`${publishedRatings.length} published`)}</p>
+      </div>
+    </div>
+    <div class="glass-card p-5">
+      <p class="text-xs uppercase tracking-[0.26em] text-white/55">Inquiry Queue</p>
+      <p class="display text-4xl mt-3">${escapeHtml(String(openInquiries))}</p>
+      <p class="text-white/65 mt-2">Guest inquiries waiting for follow-up or active replies.</p>
+    </div>
+    <div class="glass-card p-5">
+      <p class="text-xs uppercase tracking-[0.26em] text-white/55">Featured Reviews</p>
+      <p class="display text-4xl mt-3">${escapeHtml(String(featuredRatings))}</p>
+      <p class="text-white/65 mt-2">Published ratings currently highlighted on the public ratings page.</p>
+    </div>
+  `;
+};
+
+const renderInquiriesSection = () => {
+  const list = document.getElementById('inquiriesTable');
+  const search = document.getElementById('inquiriesSearch');
+  const filter = document.getElementById('inquiriesFilter');
+  if (!list) return;
+
+  const query = (search?.value || '').toLowerCase();
+  const status = filter?.value || 'All';
+  let filtered = state.inquiries.filter((inquiry) =>
+    `${inquiry.name || ''} ${inquiry.email || ''} ${inquiry.subject || ''} ${inquiry.type || ''} ${inquiry.source || ''} ${
+      inquiry.message || ''
+    }`
+      .toLowerCase()
+      .includes(query)
+  );
+  if (status !== 'All') filtered = filtered.filter((inquiry) => inquiry.status === status);
+
+  const { data, totalPages, page } = paginate(filtered, pagination.inquiries);
+  pagination.inquiries = page;
+
+  list.innerHTML = data.length
+    ? data
+        .map(
+          (inquiry) => `
+        <tr>
+          <td>
+            <div class="space-y-1">
+              <p class="font-semibold text-sand-100">${escapeHtml(inquiry.name)}</p>
+              <p class="text-xs text-white/55">${escapeHtml(inquiry.email)}</p>
+            </div>
+          </td>
+          <td>
+            <div class="space-y-1">
+              <p class="font-semibold text-sand-100">${escapeHtml(inquiry.subject)}</p>
+              <p class="text-xs text-white/55">${escapeHtml(inquiry.type || 'General Inquiry')}</p>
+            </div>
+          </td>
+          <td>
+            <div class="space-y-1">
+              <p>${escapeHtml(inquiry.source || 'Contact Page')}</p>
+              <p class="text-xs text-white/55">${escapeHtml(formatDateTime(inquiry.updatedAt || inquiry.createdAt))}</p>
+            </div>
+          </td>
+          <td>${escapeHtml(truncateText(inquiry.message, 96))}</td>
+          <td>${renderStatusBadge(inquiry.status || 'New')}</td>
+          <td>${renderAdminActions('inquiry', inquiry._id)}</td>
+        </tr>
+      `
+        )
+        .join('')
+    : renderEmptyRow(6, 'No inquiries found.');
+
+  renderPagination('inquiriesPagination', 'inquiries', totalPages);
+};
+
+const renderRatingsSection = () => {
+  const list = document.getElementById('ratingsTable');
+  const search = document.getElementById('ratingsSearch');
+  const filter = document.getElementById('ratingsFilter');
+  if (!list) return;
+
+  const query = (search?.value || '').toLowerCase();
+  const status = filter?.value || 'All';
+  let filtered = state.ratings.filter((rating) =>
+    `${rating.name || ''} ${rating.email || ''} ${rating.title || ''} ${rating.visitType || ''} ${rating.message || ''}`
+      .toLowerCase()
+      .includes(query)
+  );
+  if (status !== 'All') filtered = filtered.filter((rating) => rating.status === status);
+
+  const { data, totalPages, page } = paginate(filtered, pagination.ratings);
+  pagination.ratings = page;
+
+  list.innerHTML = data.length
+    ? data
+        .map(
+          (rating) => `
+        <tr>
+          <td>
+            <div class="space-y-1">
+              <p class="font-semibold text-sand-100">${escapeHtml(rating.name)}</p>
+              <p class="text-xs text-white/55">${escapeHtml(rating.email)}</p>
+            </div>
+          </td>
+          <td>
+            <div class="space-y-1">
+              <p class="font-semibold text-sand-100">${escapeHtml(rating.title)}</p>
+              <p class="text-xs text-white/55">${escapeHtml(truncateText(rating.message, 78))}</p>
+            </div>
+          </td>
+          <td>
+            <div class="space-y-1">
+              <p>${renderStars(rating.rating)}</p>
+              <p class="text-xs text-white/55">${escapeHtml(`${rating.rating || 0}/5 • ${rating.visitType || 'General'}`)}</p>
+            </div>
+          </td>
+          <td>${renderStatusBadge(rating.status || 'Pending')}</td>
+          <td>${rating.isFeatured ? '<span class="text-sea-400 font-semibold">Featured</span>' : '<span class="text-white/45">No</span>'}</td>
+          <td>${renderAdminActions('rating', rating._id)}</td>
+        </tr>
+      `
+        )
+        .join('')
+    : renderEmptyRow(6, 'No ratings found.');
+
+  renderPagination('ratingsPagination', 'ratings', totalPages);
+};
+
+const renderRatingsModerationSection = () => {
+  const list = document.getElementById('ratingsTable');
+  const search = document.getElementById('ratingsSearch');
+  const filter = document.getElementById('ratingsFilter');
+  if (!list) return;
+
+  const query = (search?.value || '').toLowerCase();
+  const status = filter?.value || 'All';
+  let filtered = state.ratings.filter((rating) =>
+    `${rating.name || ''} ${rating.email || ''} ${rating.title || ''} ${rating.visitType || ''} ${rating.message || ''}`
+      .toLowerCase()
+      .includes(query)
+  );
+  if (status !== 'All') filtered = filtered.filter((rating) => rating.status === status);
+
+  const { data, totalPages, page } = paginate(filtered, pagination.ratings);
+  pagination.ratings = page;
+
+  list.innerHTML = data.length
+    ? data
+        .map(
+          (rating) => `
+        <tr>
+          <td>
+            <div class="space-y-1">
+              <p class="font-semibold text-sand-100">${escapeHtml(rating.name)}</p>
+              <p class="text-xs text-white/55">${escapeHtml(rating.email)}</p>
+            </div>
+          </td>
+          <td>
+            <div class="space-y-1">
+              <p class="font-semibold text-sand-100">${escapeHtml(rating.title)}</p>
+              <p class="text-xs text-white/55">${escapeHtml(truncateText(rating.message, 78))}</p>
+            </div>
+          </td>
+          <td>
+            <div class="space-y-1">
+              <p>${renderStars(rating.rating)}</p>
+              <p class="text-xs text-white/55">${escapeHtml(`${rating.rating || 0}/5 - ${rating.visitType || 'General'}`)}</p>
+            </div>
+          </td>
+          <td>${renderStatusBadge(rating.status || 'Published')}</td>
+          <td>${rating.isFeatured ? '<span class="text-sea-400 font-semibold">Featured</span>' : '<span class="text-white/45">No</span>'}</td>
+          <td>${renderRatingAdminActions(rating)}</td>
+        </tr>
+      `
+        )
+        .join('')
+    : renderEmptyRow(6, 'No ratings found.');
+
+  renderPagination('ratingsPagination', 'ratings', totalPages);
+};
+
 const renderContentSection = () => {
   const about = state.content.find((block) => block.key === 'about');
-  const services = state.content.find((block) => block.key === 'services');
+  const ratings = state.content.find((block) => block.key === 'ratings') || state.content.find((block) => block.key === 'services');
+  const aboutTitle = document.getElementById('aboutTitle');
+  const aboutBody = document.getElementById('aboutBody');
+  const ratingsTitle = document.getElementById('ratingsTitle');
+  const ratingsBody = document.getElementById('ratingsBody');
   if (about) {
-    document.getElementById('aboutTitle').value = about.title;
-    document.getElementById('aboutBody').value = about.body;
+    if (aboutTitle) aboutTitle.value = about.title || '';
+    if (aboutBody) aboutBody.value = about.body || '';
   }
-  if (services) {
-    document.getElementById('servicesTitle').value = services.title;
-    document.getElementById('servicesBody').value = services.body;
+  if (ratings) {
+    if (ratingsTitle) ratingsTitle.value = ratings.title || '';
+    if (ratingsBody) ratingsBody.value = ratings.body || '';
   }
 };
 
@@ -406,68 +725,97 @@ const renderAll = () => {
   renderRoomBookingsSection();
   renderBoatsSection();
   renderBoatBookingsSection();
+  renderRatingsSummaryCards();
+  renderInquiriesSection();
+  renderRatingsModerationSection();
   renderContentSection();
 };
 
 const bindActions = () => {
-  document.getElementById('menuSearch').addEventListener('input', () => renderMenuSection());
-  document.getElementById('ordersSearch').addEventListener('input', () => renderOrdersSection());
-  document.getElementById('ordersFilter').addEventListener('change', () => renderOrdersSection());
-  document.getElementById('roomsSearch').addEventListener('input', () => renderRoomsSection());
-  document.getElementById('roomBookingsSearch').addEventListener('input', () => renderRoomBookingsSection());
-  document.getElementById('roomBookingsFilter').addEventListener('change', () => renderRoomBookingsSection());
-  document.getElementById('boatsSearch').addEventListener('input', () => renderBoatsSection());
-  document.getElementById('boatBookingsSearch').addEventListener('input', () => renderBoatBookingsSection());
-  document.getElementById('boatBookingsFilter').addEventListener('change', () => renderBoatBookingsSection());
+  const bindIfPresent = (id, eventName, handler) => {
+    const element = document.getElementById(id);
+    if (element) element.addEventListener(eventName, handler);
+  };
 
-  document.getElementById('menuAdd').addEventListener('click', () => openEdit('menu'));
-  document.getElementById('roomsAdd').addEventListener('click', () => openEdit('room'));
-  document.getElementById('boatsAdd').addEventListener('click', () => openEdit('boat'));
+  bindIfPresent('menuSearch', 'input', () => renderMenuSection());
+  bindIfPresent('ordersSearch', 'input', () => renderOrdersSection());
+  bindIfPresent('ordersFilter', 'change', () => renderOrdersSection());
+  bindIfPresent('roomsSearch', 'input', () => renderRoomsSection());
+  bindIfPresent('roomBookingsSearch', 'input', () => renderRoomBookingsSection());
+  bindIfPresent('roomBookingsFilter', 'change', () => renderRoomBookingsSection());
+  bindIfPresent('boatsSearch', 'input', () => renderBoatsSection());
+  bindIfPresent('boatBookingsSearch', 'input', () => renderBoatBookingsSection());
+  bindIfPresent('boatBookingsFilter', 'change', () => renderBoatBookingsSection());
+  bindIfPresent('inquiriesSearch', 'input', () => renderInquiriesSection());
+  bindIfPresent('inquiriesFilter', 'change', () => renderInquiriesSection());
+  bindIfPresent('ratingsSearch', 'input', () => renderRatingsModerationSection());
+  bindIfPresent('ratingsFilter', 'change', () => renderRatingsModerationSection());
 
-  document.getElementById('adminContent').addEventListener('click', (event) => {
-    const target = event.target;
-    if (target.dataset.edit) {
-      const type = target.dataset.edit;
-      const id = target.dataset.id;
-      openEdit(type, id);
-    }
-    if (target.dataset.delete) {
-      const type = target.dataset.delete;
-      const id = target.dataset.id;
-      handleDelete(type, id);
-    }
-  });
+  bindIfPresent('menuAdd', 'click', () => openEdit('menu'));
+  bindIfPresent('roomsAdd', 'click', () => openEdit('room'));
+  bindIfPresent('boatsAdd', 'click', () => openEdit('boat'));
+  bindIfPresent('inquiryAdd', 'click', () => openEdit('inquiry'));
+  bindIfPresent('ratingAdd', 'click', () => openEdit('rating'));
 
-  document.getElementById('adminContent').addEventListener('change', (event) => {
-    const target = event.target;
-    if (target.dataset.status === 'order') updateStatus('/api/orders', target.dataset.id, target.value);
-    if (target.dataset.status === 'room') updateStatus('/api/room-bookings', target.dataset.id, target.value);
-    if (target.dataset.status === 'boat') updateStatus('/api/boat-bookings', target.dataset.id, target.value);
-  });
+  const adminContent = document.getElementById('adminContent');
+  if (adminContent) {
+    adminContent.addEventListener('click', (event) => {
+      const editTrigger = event.target.closest('[data-edit]');
+      const deleteTrigger = event.target.closest('[data-delete]');
+      const visibilityTrigger = event.target.closest('[data-rating-visibility]');
 
-  document.getElementById('contentForm').addEventListener('submit', async (event) => {
+      if (editTrigger) {
+        const type = editTrigger.dataset.edit;
+        const id = editTrigger.dataset.id;
+        openEdit(type, id);
+      }
+      if (deleteTrigger) {
+        const type = deleteTrigger.dataset.delete;
+        const id = deleteTrigger.dataset.id;
+        handleDelete(type, id);
+      }
+      if (visibilityTrigger) {
+        updateRatingVisibility(visibilityTrigger.dataset.ratingVisibility, visibilityTrigger.dataset.nextStatus);
+      }
+    });
+  }
+
+  if (adminContent) {
+    adminContent.addEventListener('change', (event) => {
+      const target = event.target;
+      if (target.dataset.status === 'order') updateStatus('/api/orders', target.dataset.id, target.value);
+      if (target.dataset.status === 'room') updateStatus('/api/room-bookings', target.dataset.id, target.value);
+      if (target.dataset.status === 'boat') updateStatus('/api/boat-bookings', target.dataset.id, target.value);
+    });
+  }
+
+  bindIfPresent('contentForm', 'submit', async (event) => {
     event.preventDefault();
+    const aboutTitle = document.getElementById('aboutTitle');
+    const aboutBody = document.getElementById('aboutBody');
+    const ratingsTitle = document.getElementById('ratingsTitle');
+    const ratingsBody = document.getElementById('ratingsBody');
     const payload = {
       blocks: [
         {
           key: 'about',
-          title: document.getElementById('aboutTitle').value,
-          body: document.getElementById('aboutBody').value
+          title: aboutTitle?.value || '',
+          body: aboutBody?.value || ''
         },
         {
-          key: 'services',
-          title: document.getElementById('servicesTitle').value,
-          body: document.getElementById('servicesBody').value
+          key: 'ratings',
+          title: ratingsTitle?.value || '',
+          body: ratingsBody?.value || ''
         }
       ]
     };
     try {
       SF_UI.showLoader();
-      await SF_UTILS.apiFetch('/api/content', { method: 'PUT', body: JSON.stringify(payload) });
+      await adminApiFetch('/api/content', { method: 'PUT', body: JSON.stringify(payload) });
       SF_UI.showToast('Content updated', 'success');
       await loadAll();
     } catch (error) {
-      SF_UI.showToast(error.message, 'error');
+      SF_UI.showToast(error.message || 'Unable to update content', 'error');
     } finally {
       SF_UI.hideLoader();
     }
@@ -476,7 +824,7 @@ const bindActions = () => {
 
 const updateStatus = async (basePath, id, status) => {
   try {
-    await SF_UTILS.apiFetch(`${basePath}/${id}/status`, {
+    await adminApiFetch(`${basePath}/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status })
     });
@@ -487,53 +835,116 @@ const updateStatus = async (basePath, id, status) => {
   }
 };
 
+const updateRatingVisibility = async (id, status) => {
+  try {
+    SF_UI.showLoader();
+    await adminApiFetch(`/api/ratings/${id}/visibility`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    });
+    SF_UI.showToast(status === 'Hidden' ? 'Rating hidden from website' : 'Rating shown on website', 'success');
+    await loadAll();
+  } catch (error) {
+    SF_UI.showToast(error.message || 'Unable to update rating visibility', 'error');
+  } finally {
+    SF_UI.hideLoader();
+  }
+};
+
 const openEdit = (type, id = null) => {
   let item = null;
   if (id) {
     if (type === 'menu') item = state.menu.find((m) => m._id === id);
     if (type === 'room') item = state.rooms.find((m) => m._id === id);
     if (type === 'boat') item = state.boats.find((m) => m._id === id);
+    if (type === 'inquiry') item = state.inquiries.find((m) => m._id === id);
+    if (type === 'rating') item = state.ratings.find((m) => m._id === id);
+  }
+
+  if (type === 'rating') {
+    SF_UI.showToast('Admin can only hide or delete ratings', 'error');
+    return;
   }
 
   if (type === 'menu') {
     openModal(id ? 'Edit Menu Item' : 'Add Menu Item', [
-      { name: 'name', label: 'Name', value: item?.name },
-      { name: 'description', label: 'Description', type: 'textarea', value: item?.description },
-      { name: 'price', label: 'Price', type: 'number', value: item?.price },
-      { name: 'category', label: 'Category', value: item?.category },
+      { name: 'name', label: 'Name', value: item?.name, required: true },
+      { name: 'description', label: 'Description', type: 'textarea', value: item?.description, required: true, rows: 4 },
+      { name: 'price', label: 'Price', type: 'number', value: item?.price, required: true, min: 0, step: '0.01' },
+      { name: 'category', label: 'Category', value: item?.category, required: true },
       { name: 'image', label: 'Image URL', value: item?.image },
       { name: 'tags', label: 'Tags (comma)', value: item?.tags?.join(', ') },
       { name: 'isAvailable', label: 'Available', type: 'checkbox', value: item?.isAvailable }
-    ], (data) => saveEntity(type, id, data));
+    ], (data, closeModal) => saveEntity(type, id, data, closeModal));
   }
 
   if (type === 'room') {
     openModal(id ? 'Edit Room' : 'Add Room', [
-      { name: 'name', label: 'Name', value: item?.name },
-      { name: 'description', label: 'Description', type: 'textarea', value: item?.description },
-      { name: 'pricePerNight', label: 'Price Per Night', type: 'number', value: item?.pricePerNight },
-      { name: 'capacity', label: 'Capacity', type: 'number', value: item?.capacity },
+      { name: 'name', label: 'Name', value: item?.name, required: true },
+      { name: 'description', label: 'Description', type: 'textarea', value: item?.description, required: true, rows: 4 },
+      { name: 'pricePerNight', label: 'Price Per Night', type: 'number', value: item?.pricePerNight, required: true, min: 0, step: '0.01' },
+      { name: 'capacity', label: 'Capacity', type: 'number', value: item?.capacity, required: true, min: 1, step: '1' },
       { name: 'amenities', label: 'Amenities (comma)', value: item?.amenities?.join(', ') },
       { name: 'images', label: 'Image URLs (comma)', value: item?.images?.join(', ') },
       { name: 'isActive', label: 'Active', type: 'checkbox', value: item?.isActive }
-    ], (data) => saveEntity(type, id, data));
+    ], (data, closeModal) => saveEntity(type, id, data, closeModal));
   }
 
   if (type === 'boat') {
     openModal(id ? 'Edit Boat Ride' : 'Add Boat Ride', [
-      { name: 'name', label: 'Name', value: item?.name },
-      { name: 'description', label: 'Description', type: 'textarea', value: item?.description },
-      { name: 'durationHours', label: 'Duration (hours)', type: 'number', value: item?.durationHours },
-      { name: 'maxCapacity', label: 'Max Capacity', type: 'number', value: item?.maxCapacity },
-      { name: 'price', label: 'Price per guest', type: 'number', value: item?.price },
+      { name: 'name', label: 'Name', value: item?.name, required: true },
+      { name: 'description', label: 'Description', type: 'textarea', value: item?.description, required: true, rows: 4 },
+      { name: 'durationHours', label: 'Duration (hours)', type: 'number', value: item?.durationHours, required: true, min: 0.5, step: '0.5' },
+      { name: 'maxCapacity', label: 'Max Capacity', type: 'number', value: item?.maxCapacity, required: true, min: 1, step: '1' },
+      { name: 'price', label: 'Price per guest', type: 'number', value: item?.price, required: true, min: 0, step: '0.01' },
       { name: 'timeSlots', label: 'Time slots (comma)', value: item?.timeSlots?.join(', ') },
       { name: 'images', label: 'Image URLs (comma)', value: item?.images?.join(', ') },
       { name: 'isActive', label: 'Active', type: 'checkbox', value: item?.isActive }
-    ], (data) => saveEntity(type, id, data));
+    ], (data, closeModal) => saveEntity(type, id, data, closeModal));
+  }
+
+  if (type === 'inquiry') {
+    openModal(id ? 'Edit Inquiry' : 'Add Inquiry', [
+      { name: 'name', label: 'Guest Name', value: item?.name, required: true },
+      { name: 'email', label: 'Email', type: 'email', value: item?.email, required: true },
+      { name: 'phone', label: 'Phone', type: 'tel', value: item?.phone },
+      { name: 'subject', label: 'Subject', value: item?.subject, required: true },
+      { name: 'type', label: 'Inquiry Type', type: 'select', value: item?.type || 'General Inquiry', options: INQUIRY_TYPES, required: true },
+      { name: 'source', label: 'Source', type: 'select', value: item?.source || 'Admin Dashboard', options: INQUIRY_SOURCES, required: true },
+      { name: 'message', label: 'Message', type: 'textarea', value: item?.message, required: true, rows: 5 },
+      { name: 'status', label: 'Status', type: 'select', value: item?.status || 'New', options: INQUIRY_STATUSES, required: true }
+    ], (data, closeModal) => saveEntity(type, id, data, closeModal));
+  }
+
+  if (type === 'rating') {
+    openModal(id ? 'Edit Rating' : 'Add Rating', [
+      { name: 'name', label: 'Guest Name', value: item?.name, required: true },
+      { name: 'email', label: 'Email', type: 'email', value: item?.email, required: true },
+      { name: 'title', label: 'Feedback Title', value: item?.title, required: true },
+      { name: 'visitType', label: 'Visit Type', type: 'select', value: item?.visitType || 'General', options: RATING_VISIT_TYPES, required: true },
+      {
+        name: 'rating',
+        label: 'Star Rating',
+        type: 'select',
+        value: String(item?.rating || 5),
+        options: [
+          { value: '5', label: '5 Stars - Excellent' },
+          { value: '4', label: '4 Stars - Very Good' },
+          { value: '3', label: '3 Stars - Good' },
+          { value: '2', label: '2 Stars - Fair' },
+          { value: '1', label: '1 Star - Poor' }
+        ],
+        required: true
+      },
+      { name: 'source', label: 'Source', type: 'select', value: item?.source || 'Admin Dashboard', options: RATING_SOURCES, required: true },
+      { name: 'message', label: 'Feedback Message', type: 'textarea', value: item?.message, required: true, rows: 5 },
+      { name: 'status', label: 'Status', type: 'select', value: item?.status || 'Pending', options: RATING_STATUSES, required: true },
+      { name: 'isFeatured', label: 'Feature on Ratings Page', type: 'checkbox', value: item?.isFeatured }
+    ], (data, closeModal) => saveEntity(type, id, data, closeModal));
   }
 };
 
-const saveEntity = async (type, id, data) => {
+const saveEntity = async (type, id, data, closeModal) => {
   const payload = { ...data };
   if (payload.tags !== undefined) payload.tags = payload.tags.split(',').map((t) => t.trim()).filter(Boolean);
   if (payload.amenities !== undefined) payload.amenities = payload.amenities.split(',').map((t) => t.trim()).filter(Boolean);
@@ -545,22 +956,26 @@ const saveEntity = async (type, id, data) => {
   if (payload.capacity !== undefined && payload.capacity !== '') payload.capacity = Number(payload.capacity);
   if (payload.durationHours !== undefined && payload.durationHours !== '') payload.durationHours = Number(payload.durationHours);
   if (payload.maxCapacity !== undefined && payload.maxCapacity !== '') payload.maxCapacity = Number(payload.maxCapacity);
+  if (payload.rating !== undefined && payload.rating !== '') payload.rating = Number(payload.rating);
 
   let endpoint = '';
   if (type === 'menu') endpoint = '/api/menu';
   if (type === 'room') endpoint = '/api/rooms';
   if (type === 'boat') endpoint = '/api/boats';
+  if (type === 'inquiry') endpoint = id ? `/api/inquiries/${id}` : '/api/inquiries/admin';
+  if (type === 'rating') endpoint = id ? `/api/ratings/${id}` : '/api/ratings/admin';
 
   try {
     SF_UI.showLoader();
-    await SF_UTILS.apiFetch(id ? `${endpoint}/${id}` : endpoint, {
+    await adminApiFetch(id && ['menu', 'room', 'boat'].includes(type) ? `${endpoint}/${id}` : endpoint, {
       method: id ? 'PUT' : 'POST',
       body: JSON.stringify(payload)
     });
+    if (closeModal) closeModal();
     SF_UI.showToast('Saved successfully', 'success');
     await loadAll();
   } catch (error) {
-    SF_UI.showToast(error.message, 'error');
+    SF_UI.showToast(error.message || 'Unable to save record', 'error');
   } finally {
     SF_UI.hideLoader();
   }
@@ -572,14 +987,16 @@ const handleDelete = async (type, id) => {
   if (type === 'menu') endpoint = '/api/menu';
   if (type === 'room') endpoint = '/api/rooms';
   if (type === 'boat') endpoint = '/api/boats';
+  if (type === 'inquiry') endpoint = '/api/inquiries';
+  if (type === 'rating') endpoint = '/api/ratings';
 
   try {
     SF_UI.showLoader();
-    await SF_UTILS.apiFetch(`${endpoint}/${id}`, { method: 'DELETE' });
+    await adminApiFetch(`${endpoint}/${id}`, { method: 'DELETE' });
     SF_UI.showToast('Deleted', 'success');
     await loadAll();
   } catch (error) {
-    SF_UI.showToast(error.message, 'error');
+    SF_UI.showToast(error.message || 'Unable to delete record', 'error');
   } finally {
     SF_UI.hideLoader();
   }
@@ -590,12 +1007,8 @@ const initAdminPage = async () => {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
       try {
-        if (window.SF_FIREBASE && window.SF_FIREBASE.signOut) {
-          await window.SF_FIREBASE.signOut();
-        } else {
-          SF_UTILS.clearAuth();
-        }
-        SF_UI.showToast('Logged out', 'success');
+        SF_UTILS.clearAdminAuth();
+        SF_UI.showToast('Admin session closed', 'success');
         setTimeout(() => (window.location.href = 'index.html'), 600);
       } catch (error) {
         SF_UI.showToast('Unable to logout', 'error');

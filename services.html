@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SeaForestuna | Services</title>
+    <title>SeaForestuna | Ratings</title>
     <link rel="icon" type="image/png" href="assets/images/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -38,34 +38,253 @@
     <section class="pt-32 pb-16 max-w-6xl mx-auto px-6">
       <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-10 items-center">
         <div class="space-y-4">
-          <span class="badge">Experiences</span>
-          <h1 class="display text-5xl" data-content-title="services">Our Services</h1>
-          <p class="text-white/70" data-content-body="services">
-            Dining journeys, boutique stays, and curated sea adventures - all in one coastal sanctuary.
+          <span class="badge">Guest Voices</span>
+          <h1 class="display text-5xl" data-content-title="ratings">Ratings and Guest Feedback</h1>
+          <p class="text-white/70" data-content-body="ratings">
+            Discover how guests rate SeaForestuna dining, stays, and sea journeys, then share your own experience with
+            our team.
           </p>
         </div>
         <div class="image-card">
-          <img data-img="servicesHero" alt="Services" />
+          <img data-img="servicesHero" alt="Guest ratings" />
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-6 pb-12">
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="glass-card p-6 reveal">
+          <p class="text-xs uppercase tracking-[0.26em] text-white/55">Average Rating</p>
+          <div class="flex items-end justify-between gap-4 mt-4">
+            <h2 id="ratingAverage" class="display text-5xl">0.0</h2>
+            <p id="ratingAverageStars" class="rating-summary-stars"></p>
+          </div>
+        </div>
+        <div class="glass-card p-6 reveal">
+          <p class="text-xs uppercase tracking-[0.26em] text-white/55">Published Feedbacks</p>
+          <h2 id="ratingTotal" class="display text-5xl mt-4">0</h2>
+          <p class="text-white/65 mt-3">Verified feedback currently visible on the ratings page.</p>
+        </div>
+        <div class="glass-card p-6 reveal">
+          <p class="text-xs uppercase tracking-[0.26em] text-white/55">Featured Stories</p>
+          <h2 id="ratingFeatured" class="display text-5xl mt-4">0</h2>
+          <p class="text-white/65 mt-3">Highlighted guest reviews selected by the SeaForestuna team.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-6 pb-16">
+      <div class="grid xl:grid-cols-[1.15fr_0.85fr] gap-8 items-start">
+        <form id="ratingForm" class="glass-card p-8 space-y-5 reveal">
+          <div class="space-y-2">
+            <span class="badge">Share Feedback</span>
+            <h2 class="display text-4xl">Rate Your SeaForestuna Experience</h2>
+            <p class="text-white/70">Your feedback goes live on the page right away and can be edited later from your own rating card.</p>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-white/70">Name</label>
+              <input name="name" type="text" class="input-field mt-1" required />
+            </div>
+            <div>
+              <label class="text-sm text-white/70">Email</label>
+              <input name="email" type="email" class="input-field mt-1" required />
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-sm text-white/70">Visit Type</label>
+              <select name="visitType" class="input-field select-field mt-1" required>
+                <option>Dining</option>
+                <option>Stay</option>
+                <option>Boat Ride</option>
+                <option>Website</option>
+                <option>General</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm text-white/70">Feedback Title</label>
+              <input name="title" type="text" class="input-field mt-1" placeholder="Amazing sunset ride" required />
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between gap-4">
+              <label class="text-sm text-white/70">Star Rating</label>
+              <span id="ratingSelectionLabel" class="text-sm text-sea-400">5 out of 5</span>
+            </div>
+            <div class="rating-star-picker mt-3" role="radiogroup" aria-label="Star rating">
+              <button type="button" class="rating-star-btn" data-rating-value="1" aria-label="1 star"></button>
+              <button type="button" class="rating-star-btn" data-rating-value="2" aria-label="2 stars"></button>
+              <button type="button" class="rating-star-btn" data-rating-value="3" aria-label="3 stars"></button>
+              <button type="button" class="rating-star-btn" data-rating-value="4" aria-label="4 stars"></button>
+              <button type="button" class="rating-star-btn" data-rating-value="5" aria-label="5 stars"></button>
+            </div>
+            <input type="hidden" name="rating" value="5" />
+          </div>
+
+          <div>
+            <label class="text-sm text-white/70">Feedback</label>
+            <textarea
+              name="message"
+              rows="5"
+              class="input-field mt-1"
+              placeholder="Tell us what stood out during your visit."
+              required
+            ></textarea>
+          </div>
+
+          <button class="btn-primary w-full" type="submit">Publish Rating</button>
+          <p class="text-sm text-white/55">Published ratings stay visible here until you edit them or the admin team hides them.</p>
+        </form>
+
+        <div class="ratings-side-stack">
+          <div class="glass-card p-8 reveal">
+            <span class="badge">Why It Matters</span>
+            <h2 class="display text-4xl mt-4">Trusted Feedback for Future Guests</h2>
+            <div class="space-y-4 text-white/70 mt-5">
+              <p>We publish clear guest feedback so visitors can understand what dining, room stays, and lagoon rides feel like before booking.</p>
+              <p>Featured reviews help highlight memorable dining moments, relaxing stays, and standout sea journeys across the SeaForestuna experience.</p>
+            </div>
+          </div>
+          <div class="glass-card p-8 reveal">
+            <span class="badge">Need Help?</span>
+            <h3 class="display text-3xl mt-4">Send an Inquiry</h3>
+            <p class="text-white/70 mt-3">
+              Have a question about reservations, timings, or special arrangements? Reach the team through the inquiry
+              desk and we will follow up directly.
+            </p>
+            <div class="mt-6">
+              <button id="ratingInquiryToggle" class="btn-outline" type="button" aria-expanded="false">Open Inquiry Desk</button>
+            </div>
+          </div>
+          <div id="ratingInquiryDrawer" class="ratings-inquiry-drawer">
+            <div class="ratings-inquiry-drawer__inner">
+              <form id="ratingInquiryForm" class="glass-card p-7 space-y-4">
+                <div class="space-y-2">
+                  <span class="badge">Inquiry Desk</span>
+                  <h3 class="display text-3xl">Send Your Inquiry</h3>
+                  <p class="text-white/70">Use this quick form without leaving the Ratings page.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="text-sm text-white/70">Name</label>
+                    <input name="name" type="text" class="input-field mt-1" required />
+                  </div>
+                  <div>
+                    <label class="text-sm text-white/70">Email</label>
+                    <input name="email" type="email" class="input-field mt-1" required />
+                  </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="text-sm text-white/70">Phone</label>
+                    <input name="phone" type="text" class="input-field mt-1" />
+                  </div>
+                  <div>
+                    <label class="text-sm text-white/70">Inquiry Type</label>
+                    <select name="type" class="input-field select-field mt-1" required>
+                      <option>General Inquiry</option>
+                      <option>Dining</option>
+                      <option>Stay</option>
+                      <option>Boat Ride</option>
+                      <option>Private Event</option>
+                      <option>Website</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label class="text-sm text-white/70">Subject</label>
+                  <input name="subject" type="text" class="input-field mt-1" placeholder="Question about a recent booking" required />
+                </div>
+                <div>
+                  <label class="text-sm text-white/70">Inquiry Details</label>
+                  <textarea name="message" rows="4" class="input-field mt-1" required></textarea>
+                </div>
+                <button class="btn-primary w-full" type="submit">Send Inquiry</button>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
     <section class="max-w-6xl mx-auto px-6 pb-20">
-      <div class="grid md:grid-cols-3 gap-6">
-        <div class="glass-card p-6 reveal">
-          <h3 class="text-2xl display mb-2">Restaurant Dining</h3>
-          <p class="text-white/70">Signature menus with pickup, dine-in, and delivery options.</p>
+      <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div>
+          <span class="badge">Published Reviews</span>
+          <h2 class="display text-4xl mt-3">Guest Feedbacks</h2>
         </div>
-        <div class="glass-card p-6 reveal">
-          <h3 class="text-2xl display mb-2">Accommodation</h3>
-          <p class="text-white/70">Short-term and multi-day stays in eco-luxury suites.</p>
-        </div>
-        <div class="glass-card p-6 reveal">
-          <h3 class="text-2xl display mb-2">Boat Adventures</h3>
-          <p class="text-white/70">Guided mangrove cruises, reef snorkels, and sunset sails.</p>
-        </div>
+        <p id="ratingsSummaryText" class="text-white/65 max-w-xl">
+          Published ratings from recent SeaForestuna guests will appear here.
+        </p>
       </div>
+      <div id="ratingsList" class="ratings-grid"></div>
     </section>
+
+    <div id="ratingEditModal" class="modal-backdrop">
+      <div class="modal-panel rating-editor-modal">
+        <form id="ratingEditForm" class="rating-editor-form">
+          <div class="booking-modal__head">
+            <div>
+              <span class="badge">Edit Rating</span>
+              <h3 class="display text-3xl mt-3">Update Your Published Feedback</h3>
+              <p class="booking-modal__copy mt-3">Make changes to your rating, title, visit type, or feedback message.</p>
+            </div>
+            <button id="ratingEditClose" class="booking-modal__close" type="button" aria-label="Close rating editor">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="rating-editor-form__grid">
+            <label class="booking-field">
+              <span>Name</span>
+              <input name="name" type="text" class="input-field" required />
+            </label>
+            <label class="booking-field">
+              <span>Email</span>
+              <input name="email" type="email" class="input-field" required />
+            </label>
+            <label class="booking-field">
+              <span>Visit Type</span>
+              <select name="visitType" class="input-field select-field" required>
+                <option>Dining</option>
+                <option>Stay</option>
+                <option>Boat Ride</option>
+                <option>Website</option>
+                <option>General</option>
+              </select>
+            </label>
+            <label class="booking-field">
+              <span>Star Rating</span>
+              <select name="rating" class="input-field select-field" required>
+                <option value="5">5 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="2">2 Stars</option>
+                <option value="1">1 Star</option>
+              </select>
+            </label>
+            <label class="booking-field booking-field--wide">
+              <span>Feedback Title</span>
+              <input name="title" type="text" class="input-field" required />
+            </label>
+            <label class="booking-field booking-field--wide">
+              <span>Feedback</span>
+              <textarea name="message" rows="5" class="input-field" required></textarea>
+            </label>
+          </div>
+          <div class="rating-editor-form__actions">
+            <button class="btn-outline" type="button" id="ratingEditCancel">Cancel</button>
+            <button class="btn-primary" type="submit">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
 
     <footer data-component="footer"></footer>
 
@@ -78,7 +297,6 @@
     <script src="assets/js/components.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/content.js"></script>
+    <script src="assets/js/ratings.js"></script>
   </body>
 </html>
-
-

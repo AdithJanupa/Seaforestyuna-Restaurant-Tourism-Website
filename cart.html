@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SeaForestuna | Cart and Checkout</title>
+    <link rel="icon" type="image/png" href="assets/images/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              ink: { 900: '#04070a', 800: '#0a1116', 700: '#111a21' },
+              sea: { 500: '#c8a46a', 400: '#e3c58a' },
+              sun: { 300: '#b88b4d' },
+              sand: { 100: '#f2eadc', 200: '#dcc8a6' }
+            },
+            fontFamily: {
+              display: ['Bodoni Moda', 'serif'],
+              body: ['Outfit', 'sans-serif']
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body class="text-white">
+    <header data-component="navbar"></header>
+
+    <section class="pt-32 pb-12 max-w-7xl mx-auto px-6">
+      <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-10 items-center">
+        <div class="space-y-4">
+          <span class="badge">Cart and Checkout</span>
+          <h1 class="display text-5xl">Review Your Cart and Confirm the Journey</h1>
+          <p class="text-white/70">
+            Update quantities, choose pickup, dine-in, or delivery, then send your order from one responsive checkout
+            page.
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a href="menu.html" class="btn-outline">Continue Shopping</a>
+            <a href="#orderDetails" class="btn-primary">Jump to Details</a>
+          </div>
+        </div>
+        <div class="glass-card p-6">
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div class="stat-tile">
+              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Items in Cart</p>
+              <p id="cartHeroCount" class="display text-3xl mt-3">0</p>
+            </div>
+            <div class="stat-tile">
+              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Current Subtotal</p>
+              <p id="cartHeroSubtotal" class="display text-3xl mt-3">LKR 0/-</p>
+            </div>
+          </div>
+          <div class="mt-5 p-4 rounded-2xl border border-white/10 bg-black/20">
+            <p class="text-xs uppercase tracking-[0.3em] text-white/60">Checkout Flow</p>
+            <div class="flex items-center gap-4 mt-4 flex-wrap">
+              <div class="progress-step active"><span class="progress-dot"></span>Cart</div>
+              <div class="progress-step active"><span class="progress-dot"></span>Details</div>
+              <div class="progress-step"><span class="progress-dot"></span>Confirm</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-6 pb-20">
+      <div class="grid xl:grid-cols-[1.08fr_0.92fr] gap-8 items-start">
+        <div class="glass-card p-6 lg:p-8 reveal">
+          <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div>
+              <span class="badge">Saved Cart</span>
+              <h2 class="display text-3xl mt-4">Your Selected Plates</h2>
+            </div>
+            <a href="menu.html" class="btn-outline">Add More Items</a>
+          </div>
+
+          <div id="cartEmptyState" class="hidden journey-card text-center">
+            <h3 class="display text-2xl mb-3">Your cart is empty</h3>
+            <p class="text-white/70 mb-5">Start from the menu page to add dining favorites before checkout.</p>
+            <a href="menu.html" class="btn-primary">Browse Menu</a>
+          </div>
+
+          <div id="cartItemList" class="space-y-4"></div>
+        </div>
+
+        <div class="space-y-6 sticky-booking">
+          <div class="glass-card p-6 lg:p-8 reveal">
+            <h2 class="display text-2xl mb-5">Cart Summary</h2>
+            <div class="space-y-4 text-white/80">
+              <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <span>Items</span>
+                <span id="cartItemCount">0</span>
+              </div>
+              <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <span>Subtotal</span>
+                <span id="cartSubtotal">LKR 0/-</span>
+              </div>
+              <div class="flex items-center justify-between text-lg">
+                <span>Total</span>
+                <span id="cartGrandTotal" class="text-sea-400 font-semibold">LKR 0/-</span>
+              </div>
+            </div>
+            <a href="#orderDetails" id="summaryCheckoutBtn" class="btn-primary block w-full text-center mt-8">Continue to Details</a>
+          </div>
+
+          <div class="glass-card p-6 lg:p-8 reveal" id="orderDetails">
+            <h2 class="display text-2xl mb-5">Order Details</h2>
+            <form id="orderForm" class="space-y-4">
+              <div>
+                <label class="text-sm text-white/70">Order Type</label>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+                  <label class="glass-card p-3 flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="orderType" value="pickup" checked />
+                    <span>Pickup</span>
+                  </label>
+                  <label class="glass-card p-3 flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="orderType" value="dine-in" />
+                    <span>Dine-in</span>
+                  </label>
+                  <label class="glass-card p-3 flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="orderType" value="delivery" />
+                    <span>Delivery</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="text-sm text-white/70">Date</label>
+                  <input id="orderDate" name="orderDate" type="date" class="input-field mt-1" required />
+                </div>
+                <div>
+                  <label class="text-sm text-white/70">Time</label>
+                  <select id="orderTime" name="orderTime" class="input-field mt-1"></select>
+                </div>
+              </div>
+
+              <div id="deliveryFields" class="space-y-3 hidden">
+                <div>
+                  <label class="text-sm text-white/70">Delivery Address</label>
+                  <input name="address" type="text" class="input-field mt-1" />
+                </div>
+                <div>
+                  <label class="text-sm text-white/70">Phone</label>
+                  <input name="phone" type="text" class="input-field mt-1" />
+                </div>
+              </div>
+
+              <div id="dineInFields" class="space-y-3 hidden">
+                <div>
+                  <label class="text-sm text-white/70">Guest Count</label>
+                  <input name="guestCount" type="number" min="1" class="input-field mt-1" />
+                </div>
+                <div>
+                  <label class="text-sm text-white/70">Table Preference</label>
+                  <input name="tablePreference" type="text" class="input-field mt-1" placeholder="Window, deck, quiet corner" />
+                </div>
+              </div>
+
+              <div>
+                <label class="text-sm text-white/70">Notes</label>
+                <textarea name="notes" class="input-field mt-1" rows="3" placeholder="Allergies, special requests, arrival notes"></textarea>
+              </div>
+
+              <button type="submit" id="submitOrderBtn" class="btn-primary w-full">Submit Order</button>
+              <div id="orderConfirmation"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer data-component="footer"></footer>
+
+    <script src="assets/js/config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script src="assets/js/firebase.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/components.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/cart.js"></script>
+  </body>
+</html>

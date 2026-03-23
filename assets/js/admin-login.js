@@ -12,8 +12,8 @@ const initAdminLogin = () => {
     if (type === 'info') status.classList.add('text-white/60');
   };
 
-  const ensureFirebase = () => {
-    if (!window.SF_FIREBASE) {
+  const ensureAdminAuthConfig = () => {
+    if (!SF_CONFIG?.FIREBASE?.apiKey) {
       setStatus('Firebase config missing. Update assets/js/config.js.', 'error');
       return false;
     }
@@ -21,10 +21,11 @@ const initAdminLogin = () => {
   };
 
   const verifyAdmin = async () => {
-    const data = await SF_UTILS.apiFetch('/api/auth/me');
+    const data = await SF_UTILS.apiFetch('/api/auth/me', { authMode: 'admin' });
     if (!data.user || data.user.role !== 'admin') {
       throw new Error('Admin access required');
     }
+    SF_UTILS.setAdminUser(data.user);
     return data.user;
   };
 
@@ -33,32 +34,30 @@ const initAdminLogin = () => {
   };
 
   const checkExistingSession = async () => {
-    if (!ensureFirebase()) return;
+    if (!ensureAdminAuthConfig()) return;
+    if (!SF_UTILS.getAdminAuth()?.idToken) return;
     try {
-      await SF_UTILS.waitForAuth();
-      if (!window.SF_FIREBASE.getUser()) return;
       await verifyAdmin();
       redirectToDashboard();
     } catch (error) {
-      await window.SF_FIREBASE.signOut();
+      SF_UTILS.clearAdminAuth();
     }
   };
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (!ensureFirebase()) return;
+    if (!ensureAdminAuthConfig()) return;
 
     const payload = Object.fromEntries(new FormData(form).entries());
     try {
       SF_UI.showLoader();
-      await window.SF_FIREBASE.login(payload.email, payload.password);
+      await SF_UTILS.adminLogin(payload.email, payload.password);
       await verifyAdmin();
+      setStatus('Admin session started in this tab.', 'success');
       SF_UI.showToast('Welcome back, admin', 'success');
       redirectToDashboard();
     } catch (error) {
-      if (window.SF_FIREBASE && window.SF_FIREBASE.signOut) {
-        await window.SF_FIREBASE.signOut();
-      }
+      SF_UTILS.clearAdminAuth();
       setStatus(error.message || 'Login failed', 'error');
       SF_UI.showToast(error.message || 'Login failed', 'error');
     } finally {

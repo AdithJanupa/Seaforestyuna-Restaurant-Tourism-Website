@@ -41,9 +41,69 @@
           <span class="badge">Sea Journeys</span>
           <h1 class="display text-5xl">Boat Rides and Lagoon Expeditions</h1>
           <p class="text-white/70">Reserve sunrise, reef, or twilight routes with guided storytelling and coastal safety.</p>
+          <div class="room-hero-actions">
+            <button
+              id="bookedRidesToggle"
+              class="btn-outline room-hero-bookings-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="bookedRidesPanel"
+            >
+              <span class="room-hero-bookings-toggle__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" role="img">
+                  <path d="M5 4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v15a1 1 0 0 1-1.6.8L12 15.5 6.6 19.8A1 1 0 0 1 5 19V4Zm2 0v12.9l4.4-3.52a1 1 0 0 1 1.24 0L17 16.9V4H7Zm2.5 3a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1Zm0 4a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2h-4a1 1 0 0 1-1-1Z" fill="currentColor"/>
+                </svg>
+              </span>
+              <span id="bookedRidesToggleLabel">View Booked Rides</span>
+              <span class="room-hero-bookings-toggle__count" id="bookedRidesCount">0</span>
+            </button>
+            <a href="#boatBookingSection" class="btn-primary room-hero-book-now">Book a Ride</a>
+          </div>
         </div>
         <div class="image-card">
           <img data-img="boatHero" alt="Boat hero" />
+        </div>
+      </div>
+
+      <div id="bookedRidesPanel" class="room-bookings-drawer" aria-hidden="true">
+        <div class="room-bookings-drawer__card glass-card">
+          <div class="room-bookings-drawer__head">
+            <div>
+              <span class="badge">Journey Ledger</span>
+              <h2 class="display text-4xl mt-4">Booked Ride List</h2>
+              <p class="text-white/70 mt-3" id="bookedRidesSummary">
+                Review the boat ride plans booked from your SeaForestuna account.
+              </p>
+            </div>
+
+            <div class="room-bookings-drawer__actions">
+              <button id="bookedRidesRefresh" class="btn-outline room-bookings-toolbar-btn" type="button">Refresh</button>
+              <button id="bookedRidesPrint" class="btn-outline room-bookings-toolbar-btn" type="button">Print List</button>
+              <button id="bookedRidesExport" class="btn-primary room-bookings-toolbar-btn" type="button">Export CSV</button>
+            </div>
+          </div>
+
+          <div class="room-bookings-table-shell">
+            <div class="room-bookings-table-wrap">
+              <table class="room-bookings-table">
+                <thead>
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>Name</th>
+                    <th>Time Slot</th>
+                    <th>Count</th>
+                    <th>Special Note</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="bookedRidesBody">
+                  <tr class="room-bookings-table__empty">
+                    <td colspan="6">Your booked rides will appear here.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -86,6 +146,23 @@
       </div>
     </section>
 
+    <div id="bookingActionModal" class="modal-backdrop">
+      <div class="modal-panel booking-modal-panel">
+        <div class="booking-modal__head">
+          <div>
+            <span class="badge" id="bookingActionBadge">Booking Action</span>
+            <h3 id="bookingActionTitle" class="display text-3xl mt-3">Booking Details</h3>
+          </div>
+          <button id="bookingActionClose" class="booking-modal__close" type="button" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24" role="img">
+              <path d="M6.7 5.3a1 1 0 0 1 1.4 0L12 9.2l3.9-3.9a1 1 0 1 1 1.4 1.4L13.4 10.6l3.9 3.9a1 1 0 0 1-1.4 1.4L12 12l-3.9 3.9a1 1 0 0 1-1.4-1.4l3.9-3.9-3.9-3.9a1 1 0 0 1 0-1.4Z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+        <div id="bookingActionBody"></div>
+      </div>
+    </div>
+
     <footer data-component="footer"></footer>
 
     <script src="assets/js/config.js"></script>
@@ -99,5 +176,3 @@
     <script src="assets/js/boat.js"></script>
   </body>
 </html>
-
-
