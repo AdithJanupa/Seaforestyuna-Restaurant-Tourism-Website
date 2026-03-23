@@ -1,293 +1,206 @@
+(() => {
 let menuItems = [];
-let cart = [];
+let categoryObserver = null;
 
-const loadMenu = async () => {
-  try {
-    const data = await SF_UTILS.apiFetch('/api/menu');
-    menuItems = data;
-  } catch (error) {
-    menuItems = SF_CONFIG.FALLBACK_MENU;
-    SF_UI.showToast('Using offline menu preview', 'info');
+const categoryDetails = SF_CONFIG.MENU_CATEGORY_DETAILS || {};
+const categoryOrder = SF_CONFIG.MENU_CATEGORY_ORDER || [];
+
+const slugify = (value) =>
+  String(value || '')
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+
+const getSectionId = (category) => `menu-category-${slugify(category)}`;
+
+const getOrderedCategories = () => {
+  const available = [...new Set(menuItems.map((item) => item.category).filter(Boolean))];
+  return [...categoryOrder.filter((category) => available.includes(category)), ...available.filter((category) => !categoryOrder.includes(category))];
+};
+
+const getItemPriceLabel = (item) => item.priceLabel || SF_UTILS.formatLkrPrice(item.price || 0);
+
+const getItemImage = (item) => item.image || (categoryDetails[item.category] && categoryDetails[item.category].image) || SF_CONFIG.IMAGES.menuHero;
+
+const setActiveCategoryLink = (category) => {
+  document.querySelectorAll('[data-category-link]').forEach((link) => {
+    link.classList.toggle('active', link.dataset.categoryLink === category);
+  });
+};
+
+const initCategoryObserver = () => {
+  if (categoryObserver) {
+    categoryObserver.disconnect();
   }
-  renderMenu();
-  renderCategories();
+
+  const sections = document.querySelectorAll('[data-menu-section]');
+  if (!sections.length) return;
+
+  categoryObserver = new IntersectionObserver(
+    (entries) => {
+      const visibleEntries = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+      if (visibleEntries.length) {
+        setActiveCategoryLink(visibleEntries[0].target.dataset.menuSection);
+      }
+    },
+    {
+      rootMargin: '-18% 0px -62% 0px',
+      threshold: [0.15, 0.35, 0.6]
+    }
+  );
+
+  sections.forEach((section) => categoryObserver.observe(section));
 };
 
 const renderCategories = () => {
   const container = document.getElementById('menuCategories');
   if (!container) return;
-  const categories = ['All', ...new Set(menuItems.map((item) => item.category))];
+
+  const categories = getOrderedCategories();
+  if (!categories.length) {
+    container.innerHTML = '';
+    return;
+  }
+
   container.innerHTML = categories
     .map(
-      (cat) =>
-        `<button class="tab-pill ${cat === 'All' ? 'active' : ''}" data-category="${cat}">${cat}</button>`
-    )
-    .join('');
-
-  container.querySelectorAll('button').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      container.querySelectorAll('button').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      const category = btn.dataset.category;
-      renderMenu(category === 'All' ? null : category);
-    });
-  });
-};
-
-const renderMenu = (category = null) => {
-  const list = document.getElementById('menuList');
-  if (!list) return;
-  const items = category ? menuItems.filter((item) => item.category === category) : menuItems;
-  list.innerHTML = items
-    .map(
-      (item) => `
-        <div class="glass-card p-5 card-hover flex flex-col gap-4 reveal">
-          <div class="image-card h-48">
-            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover" />
-          </div>
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <h3 class="text-xl">${item.name}</h3>
-              <p class="text-sm text-white/70">${item.description}</p>
-            </div>
-            <span class="text-sea-400 font-semibold">${SF_UTILS.formatCurrency(item.price)}</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="badge">${item.category}</span>
-            <button class="btn-primary text-sm" data-add="${item._id}">Add</button>
-          </div>
-        </div>
+      (category, index) => `
+        <a
+          href="#${getSectionId(category)}"
+          class="tab-pill ${index === 0 ? 'active' : ''}"
+          data-category-link="${category}"
+        >
+          ${category}
+        </a>
       `
     )
     .join('');
 
-  list.querySelectorAll('[data-add]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const item = menuItems.find((m) => m._id === btn.dataset.add);
-      openItemModal(item);
+  container.querySelectorAll('[data-category-link]').forEach((link) => {
+    link.addEventListener('click', () => {
+      setActiveCategoryLink(link.dataset.categoryLink);
+    });
+  });
+};
+
+const renderMenu = () => {
+  const container = document.getElementById('menuList');
+  if (!container) return;
+
+  const categories = getOrderedCategories();
+  if (!categories.length) {
+    container.innerHTML = `
+      <div class="glass-card p-8 text-center reveal">
+        <span class="badge">Menu Unavailable</span>
+        <h2 class="display text-3xl mt-4">No menu items available right now</h2>
+        <p class="text-white/70 mt-3">Add menu items from the admin side or check the backend connection.</p>
+      </div>
+    `;
+    SF_UI.initReveal();
+    return;
+  }
+
+  container.innerHTML = categories
+    .map((category, index) => {
+      const details = categoryDetails[category] || {};
+      const items = menuItems.filter((item) => item.category === category);
+
+      return `
+        <section class="menu-category-section glass-card reveal" id="${getSectionId(category)}" data-menu-section="${category}">
+          <div class="menu-category-head">
+            <div class="menu-category-copy">
+              <span class="badge">${details.label || `Category ${String(index + 1).padStart(2, '0')}`}</span>
+              <h2 class="display text-4xl mt-4">${category}</h2>
+              ${details.note ? `<p class="menu-category-note">${details.note}</p>` : ''}
+            </div>
+            <a href="#menuTop" class="btn-outline menu-category-top">Top</a>
+          </div>
+
+          <div class="menu-item-grid">
+            ${items
+              .map(
+                (item) => `
+                  <article class="menu-item-card">
+                    <div class="menu-item-media image-card">
+                      <img src="${getItemImage(item)}" alt="${item.name}" loading="lazy" />
+                    </div>
+                    <div class="menu-item-content">
+                      <div class="menu-item-top">
+                        <h3 class="menu-item-name">${item.name}</h3>
+                        <span class="menu-item-price ${item.marketPrice ? 'menu-item-price--market' : ''}">${getItemPriceLabel(item)}</span>
+                      </div>
+                      <p class="menu-item-description">${item.description || 'SeaForestuna signature selection.'}</p>
+                    </div>
+                    <div class="menu-item-footer">
+                      <span class="badge">${category}</span>
+                      ${
+                        item.marketPrice
+                          ? '<a href="contact.html" class="btn-outline menu-item-action">Ask Price</a>'
+                          : `<button class="btn-primary menu-item-action" data-add="${item._id}">Add</button>`
+                      }
+                    </div>
+                  </article>
+                `
+              )
+              .join('')}
+          </div>
+        </section>
+      `;
+    })
+    .join('');
+
+  container.querySelectorAll('[data-add]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const item = menuItems.find((entry) => entry._id === button.dataset.add);
+      if (!item) return;
+      addToCart(item);
     });
   });
 
   SF_UI.initReveal();
+  initCategoryObserver();
 };
 
-const openItemModal = (item) => {
-  const modal = document.getElementById('itemModal');
-  const content = document.getElementById('itemModalContent');
-  if (!modal || !content) return;
-  content.innerHTML = `
-    <h3 class="text-2xl mb-2">${item.name}</h3>
-    <p class="text-sm text-white/70 mb-4">${item.description}</p>
-    <div class="flex items-center justify-between mb-4">
-      <span class="text-sea-400 font-semibold">${SF_UTILS.formatCurrency(item.price)}</span>
-      <span class="badge">${item.category}</span>
-    </div>
-    <div class="flex items-center gap-3 mb-6">
-      <label for="modalQty" class="text-sm text-white/70">Quantity</label>
-      <input id="modalQty" type="number" min="1" value="1" class="input-field w-24" />
-    </div>
-    <div class="flex gap-3 justify-end">
-      <button class="btn-outline" data-close>Cancel</button>
-      <button class="btn-primary" data-confirm>Add to cart</button>
-    </div>
-  `;
-  modal.classList.add('active');
-
-  content.querySelector('[data-close]').addEventListener('click', () => modal.classList.remove('active'));
-  content.querySelector('[data-confirm]').addEventListener('click', () => {
-    const qty = Number(document.getElementById('modalQty').value || 1);
-    addToCart(item, qty);
-    modal.classList.remove('active');
-  });
+const addToCart = (item) => {
+  SF_UTILS.addToCart(item, 1);
+  syncCartPreview();
+  SF_UI.showToast(`${item.name} added to cart`, 'success');
 };
 
-const addToCart = (item, quantity = 1) => {
-  const existing = cart.find((c) => c.menuItem === item._id);
-  if (existing) {
-    existing.quantity += quantity;
-  } else {
-    cart.push({ menuItem: item._id, name: item.name, price: item.price, quantity });
-  }
-  renderCart();
-  SF_UI.showToast('Added to cart', 'success');
-};
+const syncCartPreview = () => {
+  const count = SF_UTILS.getCartCount();
+  const subtotal = SF_UTILS.getCartSubtotal();
 
-const removeFromCart = (menuItem) => {
-  cart = cart.filter((c) => c.menuItem !== menuItem);
-  renderCart();
-};
-
-const updateQuantity = (menuItem, quantity) => {
-  const item = cart.find((c) => c.menuItem === menuItem);
-  if (item) {
-    item.quantity = Math.max(1, quantity);
-    renderCart();
-  }
-};
-
-const renderCart = () => {
-  const list = document.getElementById('cartItems');
-  const drawerList = document.getElementById('cartDrawerItems');
-  const totalEl = document.getElementById('cartTotal');
   const countEl = document.getElementById('cartCount');
-  if (!list || !totalEl) return;
+  const heroCountEl = document.getElementById('menuCartCount');
+  const subtotalEl = document.getElementById('menuCartSubtotal');
 
-  const cartMarkup = cart
-    .map(
-      (item) => `
-      <div class="flex items-center justify-between gap-3 border-b border-white/10 pb-3">
-        <div>
-          <p class="font-semibold">${item.name}</p>
-          <p class="text-xs text-white/60">${SF_UTILS.formatCurrency(item.price)}</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <input type="number" min="1" value="${item.quantity}" class="input-field w-16" data-qty="${item.menuItem}" />
-          <button class="text-sm text-red-300" data-remove="${item.menuItem}">Remove</button>
-        </div>
-      </div>
-    `
-    )
-    .join('');
+  if (countEl) countEl.textContent = count;
+  if (heroCountEl) heroCountEl.textContent = count;
+  if (subtotalEl) subtotalEl.textContent = SF_UTILS.formatLkrPrice(subtotal);
+};
 
-  list.innerHTML = cartMarkup;
-  if (drawerList) drawerList.innerHTML = cartMarkup;
-
-  list.querySelectorAll('[data-remove]').forEach((btn) => {
-    btn.addEventListener('click', () => removeFromCart(btn.dataset.remove));
-  });
-
-  list.querySelectorAll('[data-qty]').forEach((input) => {
-    input.addEventListener('change', () => updateQuantity(input.dataset.qty, Number(input.value)));
-  });
-
-  if (drawerList) {
-    drawerList.querySelectorAll('[data-remove]').forEach((btn) => {
-      btn.addEventListener('click', () => removeFromCart(btn.dataset.remove));
-    });
-    drawerList.querySelectorAll('[data-qty]').forEach((input) => {
-      input.addEventListener('change', () => updateQuantity(input.dataset.qty, Number(input.value)));
-    });
+const loadMenu = async () => {
+  try {
+    menuItems = await SF_UTILS.apiFetch('/api/menu');
+  } catch (error) {
+    menuItems = [];
+    SF_UI.showToast('Unable to load menu items', 'error');
   }
 
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  totalEl.textContent = SF_UTILS.formatCurrency(subtotal);
-  if (countEl) countEl.textContent = cart.length;
-};
-
-const initOrderForm = () => {
-  const form = document.getElementById('orderForm');
-  if (!form) return;
-  const timeSelect = document.getElementById('orderTime');
-  const dateInput = document.getElementById('orderDate');
-  const deliveryFields = document.getElementById('deliveryFields');
-  const dineInFields = document.getElementById('dineInFields');
-
-  const slots = SF_UTILS.generateTimeSlots('11:00', '21:30', 30);
-  timeSelect.innerHTML = slots.map((slot) => `<option value="${slot}">${slot}</option>`).join('');
-
-  const updateOrderTypeFields = () => {
-    const selected = form.querySelector('input[name="orderType"]:checked');
-    const type = selected ? selected.value : 'pickup';
-    deliveryFields.classList.toggle('hidden', type !== 'delivery');
-    dineInFields.classList.toggle('hidden', type !== 'dine-in');
-  };
-
-  const orderTypeInputs = form.querySelectorAll('input[name="orderType"]');
-  orderTypeInputs.forEach((input) => input.addEventListener('change', updateOrderTypeFields));
-  updateOrderTypeFields();
-
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if (cart.length === 0) return SF_UI.showToast('Add items to cart first', 'error');
-    const isAuth = await SF_UTILS.isAuthenticated();
-    if (!isAuth) {
-      SF_UI.showToast('Please login to place an order', 'error');
-      return (window.location.href = 'auth.html');
-    }
-
-    const selected = form.querySelector('input[name=\"orderType\"]:checked');
-    const payload = {
-      items: cart.map((item) => ({ menuItem: item.menuItem, quantity: item.quantity })),
-      orderType: selected ? selected.value : 'pickup',
-      scheduledDate: dateInput.value,
-      timeSlot: timeSelect.value,
-      notes: form.notes.value
-    };
-
-    if (payload.orderType === 'delivery') {
-      payload.address = form.address.value;
-      payload.phone = form.phone.value;
-    }
-    if (payload.orderType === 'dine-in') {
-      payload.guestCount = Number(form.guestCount.value);
-      payload.tablePreference = form.tablePreference.value;
-    }
-
-    try {
-      SF_UI.showLoader();
-      const order = await SF_UTILS.apiFetch('/api/orders', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
-      cart = [];
-      renderCart();
-      form.reset();
-      SF_UI.showToast('Order submitted', 'success');
-      document.getElementById('orderConfirmation').innerHTML = `
-        <div class="glass-card p-6 mt-6">
-          <h3 class="text-2xl mb-2">Order Confirmed</h3>
-          <p class="text-white/70">Reference: <span class="text-sea-400 font-semibold">${order.orderNumber}</span></p>
-        </div>
-      `;
-    } catch (error) {
-      SF_UI.showToast(error.message, 'error');
-    } finally {
-      SF_UI.hideLoader();
-    }
-  });
-};
-
-const applyOrderPrefill = () => {
-  const params = new URLSearchParams(window.location.search);
-  const orderType = params.get('orderType');
-  const date = params.get('date');
-  const time = params.get('time');
-
-  const form = document.getElementById('orderForm');
-  if (!form) return;
-  if (orderType) {
-    form.querySelectorAll('input[name=\"orderType\"]').forEach((input) => {
-      input.checked = input.value === orderType;
-    });
-    const selected = form.querySelector('input[name=\"orderType\"]:checked');
-    if (selected) selected.dispatchEvent(new Event('change'));
-  }
-  if (date) document.getElementById('orderDate').value = date;
-  if (time) document.getElementById('orderTime').value = time;
-};
-
-const initCartDrawer = () => {
-  const btn = document.getElementById('cartToggle');
-  const drawer = document.getElementById('cartDrawer');
-  const closeBtn = document.getElementById('cartClose');
-  if (!btn || !drawer || !closeBtn) return;
-  btn.addEventListener('click', () => drawer.classList.toggle('translate-x-full'));
-  closeBtn.addEventListener('click', () => drawer.classList.add('translate-x-full'));
+  renderCategories();
+  renderMenu();
+  syncCartPreview();
 };
 
 const initMenuPage = () => {
-  initCartDrawer();
   loadMenu();
-  renderCart();
-  initOrderForm();
-  applyOrderPrefill();
-
-  const modal = document.getElementById('itemModal');
-  if (modal) {
-    modal.addEventListener('click', (event) => {
-      if (event.target === modal) modal.classList.remove('active');
-    });
-  }
+  window.addEventListener('sf:cart-updated', syncCartPreview);
 };
 
 document.addEventListener('DOMContentLoaded', initMenuPage);
+})();

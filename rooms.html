@@ -44,9 +44,69 @@
             Plan a restorative stay with curated amenities, dining reservations, and access to the SeaForestuna travel
             concierge.
           </p>
+          <div class="room-hero-actions">
+            <button
+              id="bookedRoomsToggle"
+              class="btn-outline room-hero-bookings-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="bookedRoomsPanel"
+            >
+              <span class="room-hero-bookings-toggle__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" role="img">
+                  <path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14l-4-2.5L12 19l-4-2.5L4 19V5Zm2 0v10.4l2-1.25 4 2.5 4-2.5 2 1.25V5H6Zm3 3a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2h-4a1 1 0 0 1-1-1Zm0 4a1 1 0 0 1 1-1h5a1 1 0 1 1 0 2h-5a1 1 0 0 1-1-1Z" fill="currentColor"/>
+                </svg>
+              </span>
+              <span id="bookedRoomsToggleLabel">View Booked Rooms</span>
+              <span class="room-hero-bookings-toggle__count" id="bookedRoomsCount">0</span>
+            </button>
+            <a href="#bookingSection" class="btn-primary room-hero-book-now">Book a Stay</a>
+          </div>
         </div>
         <div class="image-card">
           <img data-img="roomsHero" alt="Room hero" />
+        </div>
+      </div>
+
+      <div id="bookedRoomsPanel" class="room-bookings-drawer" aria-hidden="true">
+        <div class="room-bookings-drawer__card glass-card">
+          <div class="room-bookings-drawer__head">
+            <div>
+              <span class="badge">Guest Ledger</span>
+              <h2 class="display text-4xl mt-4">Booked Room List</h2>
+              <p class="text-white/70 mt-3" id="bookedRoomsSummary">
+                Review the room reservations connected to your SeaForestuna account.
+              </p>
+            </div>
+
+            <div class="room-bookings-drawer__actions">
+              <button id="bookedRoomsRefresh" class="btn-outline room-bookings-toolbar-btn" type="button">Refresh</button>
+              <button id="bookedRoomsPrint" class="btn-outline room-bookings-toolbar-btn" type="button">Print List</button>
+              <button id="bookedRoomsExport" class="btn-primary room-bookings-toolbar-btn" type="button">Export CSV</button>
+            </div>
+          </div>
+
+          <div class="room-bookings-table-shell">
+            <div class="room-bookings-table-wrap">
+              <table class="room-bookings-table">
+                <thead>
+                  <tr>
+                    <th>Booking ID</th>
+                    <th>Name</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Count</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="bookedRoomsBody">
+                  <tr class="room-bookings-table__empty">
+                    <td colspan="6">Your booked rooms will appear here.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -89,6 +149,23 @@
       </div>
     </section>
 
+    <div id="bookingActionModal" class="modal-backdrop">
+      <div class="modal-panel booking-modal-panel">
+        <div class="booking-modal__head">
+          <div>
+            <span class="badge" id="bookingActionBadge">Booking Action</span>
+            <h3 id="bookingActionTitle" class="display text-3xl mt-3">Booking Details</h3>
+          </div>
+          <button id="bookingActionClose" class="booking-modal__close" type="button" aria-label="Close dialog">
+            <svg viewBox="0 0 24 24" role="img">
+              <path d="M6.7 5.3a1 1 0 0 1 1.4 0L12 9.2l3.9-3.9a1 1 0 1 1 1.4 1.4L13.4 10.6l3.9 3.9a1 1 0 0 1-1.4 1.4L12 12l-3.9 3.9a1 1 0 0 1-1.4-1.4l3.9-3.9-3.9-3.9a1 1 0 0 1 0-1.4Z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+        <div id="bookingActionBody"></div>
+      </div>
+    </div>
+
     <footer data-component="footer"></footer>
 
     <script src="assets/js/config.js"></script>
@@ -102,5 +179,3 @@
     <script src="assets/js/rooms.js"></script>
   </body>
 </html>
-
-

@@ -35,16 +35,18 @@
   <body class="text-white">
     <header data-component="navbar"></header>
 
-    <section class="pt-32 pb-16 max-w-7xl mx-auto px-6">
+    <section id="menuTop" class="pt-32 pb-16 max-w-7xl mx-auto px-6">
       <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-10 items-center">
         <div class="space-y-4">
-          <span class="badge">Dining Atlas</span>
-          <h1 class="display text-5xl">Menu, Ordering, and Travel-Ready Plates</h1>
+          <span class="badge">SeaForestuna Menu</span>
+          <h1 class="display text-5xl">Browse Every Category and Add Your Favorites</h1>
           <p class="text-white/70">
-            Curate a dining itinerary with pickup, dine-in, or delivery. Lock a time slot, then let our kitchen stage the
-            experience for your arrival.
+            Explore starters, soups, curries, grilled seafood, desserts, and drinks in one responsive menu. Add items to
+            your cart as you go and review everything on the cart page.
           </p>
-          <button class="btn-outline" id="cartToggle">Open Cart (<span id="cartCount">0</span>)</button>
+          <a href="cart.html" class="btn-outline inline-flex items-center gap-2" id="cartToggle">
+            Open Cart (<span id="cartCount">0</span>)
+          </a>
         </div>
         <div class="image-card">
           <img data-img="menuHero" alt="Menu hero" />
@@ -53,91 +55,50 @@
     </section>
 
     <section class="max-w-7xl mx-auto px-6 pb-10">
-      <div class="flex flex-wrap gap-3" id="menuCategories"></div>
+      <div class="menu-category-nav" id="menuCategories"></div>
     </section>
 
     <section class="max-w-7xl mx-auto px-6 pb-16">
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="menuList"></div>
+      <div class="menu-sections" id="menuList"></div>
     </section>
 
     <section class="max-w-7xl mx-auto px-6 pb-20">
       <div class="glass-card p-8">
-        <div class="flex items-center gap-4 mb-6">
-          <div class="progress-step active"><span class="progress-dot"></span>Cart</div>
-          <div class="progress-step"><span class="progress-dot"></span>Details</div>
-          <div class="progress-step"><span class="progress-dot"></span>Confirm</div>
+        <div class="grid lg:grid-cols-[0.9fr_1.1fr] gap-6 items-center">
+          <div class="space-y-4">
+            <div class="flex items-center gap-4">
+              <div class="progress-step active"><span class="progress-dot"></span>Browse</div>
+              <div class="progress-step active"><span class="progress-dot"></span>Save Cart</div>
+              <div class="progress-step"><span class="progress-dot"></span>Checkout</div>
+            </div>
+            <h3 class="text-3xl display">Review your order on the cart page</h3>
+            <p class="text-white/70">
+              Every item you add here is saved across the website. Open the dedicated cart page to update quantities,
+              choose pickup or delivery details, and submit your order.
+            </p>
+            <div class="flex flex-wrap gap-4">
+              <a href="cart.html" class="btn-primary">Go to Cart</a>
+              <a href="auth.html" class="btn-outline">Login to Order</a>
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-3 gap-4">
+            <div class="stat-tile">
+              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Items</p>
+              <p id="menuCartCount" class="display text-3xl mt-3">0</p>
+            </div>
+            <div class="stat-tile">
+              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Subtotal</p>
+              <p id="menuCartSubtotal" class="display text-2xl mt-3">LKR 0/-</p>
+            </div>
+            <div class="stat-tile">
+              <p class="text-xs uppercase tracking-[0.3em] text-white/60">Status</p>
+              <p class="display text-2xl mt-3">Ready</p>
+              <p class="text-sm text-white/60 mt-2">Cart stays synced from menu to checkout</p>
+            </div>
+          </div>
         </div>
-        <form id="orderForm" class="grid lg:grid-cols-2 gap-6">
-          <div class="space-y-4">
-            <h3 class="text-2xl display">Order Details</h3>
-            <div>
-              <label class="text-sm text-white/70">Order Type</label>
-              <div class="flex gap-4 mt-2">
-                <label class="flex items-center gap-2 text-sm"><input type="radio" name="orderType" value="pickup" checked /> Pickup</label>
-                <label class="flex items-center gap-2 text-sm"><input type="radio" name="orderType" value="dine-in" /> Dine-in</label>
-                <label class="flex items-center gap-2 text-sm"><input type="radio" name="orderType" value="delivery" /> Delivery</label>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="text-sm text-white/70">Date</label>
-                <input id="orderDate" name="orderDate" type="date" class="input-field mt-1" required />
-              </div>
-              <div>
-                <label class="text-sm text-white/70">Time</label>
-                <select id="orderTime" name="orderTime" class="input-field mt-1"></select>
-              </div>
-            </div>
-            <div id="deliveryFields" class="space-y-3 hidden">
-              <div>
-                <label class="text-sm text-white/70">Delivery Address</label>
-                <input name="address" type="text" class="input-field mt-1" />
-              </div>
-              <div>
-                <label class="text-sm text-white/70">Phone</label>
-                <input name="phone" type="text" class="input-field mt-1" />
-              </div>
-            </div>
-            <div id="dineInFields" class="space-y-3 hidden">
-              <div>
-                <label class="text-sm text-white/70">Guest Count</label>
-                <input name="guestCount" type="number" min="1" class="input-field mt-1" />
-              </div>
-              <div>
-                <label class="text-sm text-white/70">Table Preference (optional)</label>
-                <input name="tablePreference" type="text" class="input-field mt-1" />
-              </div>
-            </div>
-            <div>
-              <label class="text-sm text-white/70">Notes</label>
-              <textarea name="notes" class="input-field mt-1" rows="3" placeholder="Allergies, special requests"></textarea>
-            </div>
-          </div>
-          <div class="space-y-4">
-            <h3 class="text-2xl display">Cart Summary</h3>
-            <div id="cartItems" class="space-y-3"></div>
-            <div class="flex justify-between text-white/80">
-              <span>Subtotal</span>
-              <span id="cartTotal">$0.00</span>
-            </div>
-            <button type="submit" class="btn-primary w-full">Submit Order</button>
-            <div id="orderConfirmation"></div>
-          </div>
-        </form>
       </div>
     </section>
-
-    <div id="cartDrawer" class="fixed top-0 right-0 w-80 h-full bg-ink-800/95 p-6 transform translate-x-full transition-transform z-40">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-xl display">Your Cart</h3>
-        <button id="cartClose" class="text-white/60">Close</button>
-      </div>
-      <div id="cartDrawerItems"></div>
-    </div>
-
-    <div id="itemModal" class="modal-backdrop">
-      <div class="modal-panel" id="itemModalContent"></div>
-    </div>
 
     <footer data-component="footer"></footer>
 
@@ -152,5 +113,3 @@
     <script src="assets/js/menu.js"></script>
   </body>
 </html>
-
-
