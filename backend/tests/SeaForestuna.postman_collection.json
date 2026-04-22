@@ -1,0 +1,78 @@
+{
+  "info": {
+    "name": "SeaForestuna API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth Register (Custom Token)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Guest User\",\n  \"email\": \"guest@example.com\",\n  \"password\": \"Password123!\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Firebase Sign In (Custom Token -> ID Token)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key={{firebaseApiKey}}",
+          "protocol": "https",
+          "host": ["identitytoolkit", "googleapis", "com"],
+          "path": ["v1", "accounts:signInWithCustomToken"],
+          "query": [{ "key": "key", "value": "{{firebaseApiKey}}" }]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{customToken}}\",\n  \"returnSecureToken\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Firebase Sign In (Email/Password)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": {
+          "raw": "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={{firebaseApiKey}}",
+          "protocol": "https",
+          "host": ["identitytoolkit", "googleapis", "com"],
+          "path": ["v1", "accounts:signInWithPassword"],
+          "query": [{ "key": "key", "value": "{{firebaseApiKey}}" }]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@seaforestuna.com\",\n  \"password\": \"Admin123!\",\n  \"returnSecureToken\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Get Menu",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/api/menu", "host": ["{{baseUrl}}"], "path": ["api", "menu"] }
+      }
+    },
+    {
+      "name": "Create Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{idToken}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/orders", "host": ["{{baseUrl}}"], "path": ["api", "orders"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"items\": [{\n    \"menuItem\": \"{{menuItemId}}\",\n    \"quantity\": 2\n  }],\n  \"orderType\": \"pickup\",\n  \"scheduledDate\": \"2026-02-10\",\n  \"timeSlot\": \"12:30\"\n}"
+        }
+      }
+    }
+  ]
+}
