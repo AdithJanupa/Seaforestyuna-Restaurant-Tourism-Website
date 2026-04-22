@@ -4,6 +4,25 @@ const injectNavbar = () => {
 
   const currentUser = window.SF_UTILS && typeof SF_UTILS.getAuth === 'function' ? SF_UTILS.getAuth().user : null;
   const isLoggedIn = Boolean(currentUser);
+  const notificationAction = isLoggedIn
+    ? `
+        <button
+          class="nav-notification-btn"
+          type="button"
+          data-nav-notification-toggle
+          aria-label="Open notifications"
+          aria-controls="navNotificationPanel"
+          aria-expanded="false"
+        >
+          <span class="nav-notification-btn__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img">
+              <path d="M12 3a5 5 0 0 1 5 5v2.1c0 .9.3 1.8.9 2.5l1 1.3A2 2 0 0 1 17.3 17H6.7a2 2 0 0 1-1.6-3.1l1-1.3c.6-.7.9-1.6.9-2.5V8a5 5 0 0 1 5-5Zm0 19a3 3 0 0 1-2.8-2h5.6A3 3 0 0 1 12 22Z" fill="currentColor"/>
+            </svg>
+          </span>
+          <span class="nav-notification-btn__count" data-nav-notification-count hidden>0</span>
+        </button>
+      `
+    : '';
   const profileIcon = `
     <span class="cart-nav-link__icon" aria-hidden="true">
       <svg viewBox="0 0 24 24" role="img">
@@ -21,17 +40,17 @@ const injectNavbar = () => {
 
   target.innerHTML = `
     <nav class="nav-blur fixed top-0 left-0 right-0 z-50">
-      <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <a href="index.html" class="flex items-center gap-3">
+      <div class="site-nav__inner max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <a href="index.html" class="site-nav__brand flex items-center gap-3">
           <span class="brand-logo-wrap">
             <img src="assets/images/logo.png" alt="SeaForestuna logo" class="brand-logo" />
           </span>
-          <div>
-            <p class="text-xs uppercase tracking-[0.3em] text-white/60">SeaForestuna</p>
-            <p class="display text-lg">Restaurant Tourism</p>
+          <div class="site-nav__brand-copy">
+            <p class="site-nav__eyebrow text-xs uppercase tracking-[0.3em] text-white/60">SeaForestuna</p>
+            <p class="site-nav__title display text-lg">Restaurant Tourism</p>
           </div>
         </a>
-        <div class="hidden lg:flex items-center gap-6">
+        <div class="site-nav__desktop-actions hidden lg:flex items-center gap-6">
           <a href="index.html" class="nav-link">Home</a>
           <a href="menu.html" class="nav-link">Menu</a>
           <a href="rooms.html" class="nav-link">Rooms</a>
@@ -46,9 +65,10 @@ const injectNavbar = () => {
               </svg>
             </span>
           </a>
+          ${notificationAction}
           ${desktopAuthAction}
         </div>
-        <div class="lg:hidden flex items-center gap-3">
+        <div class="site-nav__mobile-actions lg:hidden flex items-center gap-3">
           <a href="cart.html" class="cart-nav-link cart-nav-link--compact" aria-label="View cart">
             <span class="cart-nav-link__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" role="img">
@@ -56,14 +76,20 @@ const injectNavbar = () => {
               </svg>
             </span>
           </a>
+          ${notificationAction}
           ${mobileTopAuthAction}
-          <button class="lg:hidden" id="mobileMenuBtn" aria-label="Open menu">
-            <span class="text-sand-100 text-xs uppercase tracking-[0.3em]">Menu</span>
+          <button class="mobile-menu-btn lg:hidden" id="mobileMenuBtn" aria-label="Open menu" aria-controls="mobileMenu" aria-expanded="false">
+            <span class="mobile-menu-btn__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img">
+                <path d="M4 7a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5A1 1 0 0 1 4 7Zm0 5a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1Zm1 4a1 1 0 1 0 0 2h14a1 1 0 1 0 0-2H5Z" fill="currentColor"/>
+              </svg>
+            </span>
+            <span class="mobile-menu-btn__label">Menu</span>
           </button>
         </div>
       </div>
-      <div id="mobileMenu" class="hidden lg:hidden px-6 pb-6">
-        <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
+      <div id="mobileMenu" class="site-nav__menu hidden lg:hidden px-6 pb-6">
+        <div class="site-nav__menu-panel glass-card rounded-2xl p-4 flex flex-col gap-3">
           <a href="index.html" class="nav-link">Home</a>
           <a href="menu.html" class="nav-link">Menu</a>
           <a href="rooms.html" class="nav-link">Rooms</a>
@@ -83,10 +109,35 @@ const injectNavbar = () => {
           ${mobileMenuAuthAction}
         </div>
       </div>
+      ${
+        isLoggedIn
+          ? `
+            <div class="site-nav__notifications-shell">
+              <div class="max-w-7xl mx-auto px-6">
+                <div id="navNotificationPanel" class="nav-notification-panel hidden" aria-hidden="true">
+                  <div class="nav-notification-panel__head">
+                    <div>
+                      <p class="nav-notification-panel__eyebrow">Updates</p>
+                      <h3 class="nav-notification-panel__title">Notifications</h3>
+                    </div>
+                    <span class="nav-notification-panel__badge" id="navNotificationUnreadCount">0 unread</span>
+                  </div>
+                  <div class="nav-notification-panel__actions">
+                    <button type="button" class="btn-outline nav-notification-panel__action" id="navNotificationRefresh">Refresh</button>
+                    <button type="button" class="btn-primary nav-notification-panel__action" id="navNotificationReadAll">Mark All Read</button>
+                  </div>
+                  <div id="navNotificationList" class="nav-notification-panel__list"></div>
+                </div>
+              </div>
+            </div>
+          `
+          : ''
+      }
     </nav>
   `;
 
   initCartNav();
+  initNavbarNotifications({ silent: true });
 };
 
 const injectFooter = () => {
@@ -94,39 +145,50 @@ const injectFooter = () => {
   if (!target) return;
 
   target.innerHTML = `
-    <footer class="mt-20 border-t border-white/10">
-      <div class="max-w-7xl mx-auto px-6 py-12 grid md:grid-cols-4 gap-8">
-        <div>
-          <h3 class="display text-2xl mb-3">SeaForestuna</h3>
-          <p class="text-sm text-white/70">A coastal hospitality atlas blending dining, stays, and sea journeys.</p>
+    <footer class="site-footer mt-20 border-t border-white/10">
+      <div class="site-footer__shell max-w-7xl mx-auto px-6 py-12">
+        <div class="site-footer__grid">
+          <div class="site-footer__brand">
+            <span class="badge site-footer__badge">Coastal Hospitality</span>
+            <h3 class="display text-2xl">SeaForestuna</h3>
+            <p class="site-footer__copy">A coastal hospitality atlas blending dining, stays, and sea journeys.</p>
+          </div>
+
+          <div class="site-footer__links">
+            <section class="site-footer__group" aria-labelledby="footerJourneys">
+              <h4 id="footerJourneys" class="site-footer__heading">Journeys</h4>
+              <ul class="site-footer__list">
+                <li><a href="menu.html" class="site-footer__link">Dining</a></li>
+                <li><a href="rooms.html" class="site-footer__link">Stay</a></li>
+                <li><a href="boat.html" class="site-footer__link">Boat Rides</a></li>
+              </ul>
+            </section>
+
+            <section class="site-footer__group" aria-labelledby="footerPlan">
+              <h4 id="footerPlan" class="site-footer__heading">Plan</h4>
+              <ul class="site-footer__list">
+                <li><a href="services.html" class="site-footer__link">Ratings</a></li>
+                <li><a href="about.html" class="site-footer__link">Our Story</a></li>
+                <li><a href="contact.html" class="site-footer__link">Contact</a></li>
+              </ul>
+            </section>
+          </div>
+
+          <section class="site-footer__contact-card" aria-labelledby="footerContact">
+            <h4 id="footerContact" class="site-footer__heading">Contact Details</h4>
+            <ul class="site-footer__contact-list">
+              <li>${SF_CONFIG.SITE.address}</li>
+              <li><a href="tel:${SF_CONFIG.SITE.phone.replace(/\\s+/g, '')}" class="site-footer__contact-link">Phone/WhatsApp: ${SF_CONFIG.SITE.phone}</a></li>
+              <li>${SF_CONFIG.SITE.hours || ''}</li>
+              <li><a href="mailto:${SF_CONFIG.SITE.email}" class="site-footer__contact-link">E-Mail: ${SF_CONFIG.SITE.email}</a></li>
+            </ul>
+          </section>
         </div>
-        <div>
-          <h4 class="text-white/80 font-semibold mb-3">Journeys</h4>
-          <ul class="space-y-2 text-sm">
-            <li><a href="menu.html" class="nav-link">Dining</a></li>
-            <li><a href="rooms.html" class="nav-link">Stay</a></li>
-            <li><a href="boat.html" class="nav-link">Boat Rides</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="text-white/80 font-semibold mb-3">Plan</h4>
-          <ul class="space-y-2 text-sm">
-            <li><a href="services.html" class="nav-link">Ratings</a></li>
-            <li><a href="about.html" class="nav-link">Our Story</a></li>
-            <li><a href="contact.html" class="nav-link">Contact</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="text-white/80 font-semibold mb-3">Contact Details</h4>
-          <ul class="space-y-2 text-sm text-white/70">
-            <li>${SF_CONFIG.SITE.address}</li>
-            <li>Phone/WhatsApp: ${SF_CONFIG.SITE.phone}</li>
-            <li>${SF_CONFIG.SITE.hours || ''}</li>
-            <li>E-Mail: ${SF_CONFIG.SITE.email}</li>
-          </ul>
+
+        <div class="site-footer__bottom">
+          <p class="site-footer__bottom-note">(c) 2026 SeaForestuna Restaurant Tourism</p>
         </div>
       </div>
-      <div class="text-center text-xs text-white/50 pb-6">(c) 2026 SeaForestuna Restaurant Tourism</div>
     </footer>
   `;
 };
@@ -135,8 +197,27 @@ const initMobileMenu = () => {
   const btn = document.getElementById('mobileMenuBtn');
   const menu = document.getElementById('mobileMenu');
   if (!btn || !menu) return;
+
+  const setOpen = (isOpen) => {
+    menu.classList.toggle('hidden', !isOpen);
+    btn.setAttribute('aria-expanded', String(isOpen));
+    if (isOpen) {
+      setNavbarNotificationsOpen(false);
+    }
+  };
+
   btn.addEventListener('click', () => {
-    menu.classList.toggle('hidden');
+    setOpen(menu.classList.contains('hidden'));
+  });
+
+  menu.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => setOpen(false));
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1024) {
+      setOpen(false);
+    }
   });
 };
 
@@ -159,6 +240,260 @@ const initCartNav = () => {
   window.addEventListener('storage', (event) => {
     if (event.key === 'sf_cart') {
       syncCartNavCount();
+    }
+  });
+};
+
+const navbarNotificationsState = {
+  items: [],
+  status: 'idle',
+  open: false,
+  scope: 'user'
+};
+
+let navbarNotificationsBound = false;
+
+const escapeNotificationHtml = (value) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const formatNavbarNotificationTime = (value) => {
+  if (!value) return '--';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '--';
+  return date.toLocaleString('en-LK', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+};
+
+const getNavbarCurrentUser = () =>
+  window.SF_UTILS && typeof SF_UTILS.getAuth === 'function' ? SF_UTILS.getAuth().user : null;
+
+const getNavbarNotificationScope = () => (String(getNavbarCurrentUser()?.role || '').toLowerCase() === 'admin' ? 'admin' : 'user');
+
+const getNavbarNotificationEndpoint = () =>
+  getNavbarNotificationScope() === 'admin' ? '/api/notifications/admin' : '/api/notifications/my';
+
+const getNavbarNotificationElements = () => ({
+  panel: document.getElementById('navNotificationPanel'),
+  list: document.getElementById('navNotificationList'),
+  unreadLabel: document.getElementById('navNotificationUnreadCount'),
+  refreshBtn: document.getElementById('navNotificationRefresh'),
+  readAllBtn: document.getElementById('navNotificationReadAll'),
+  toggles: document.querySelectorAll('[data-nav-notification-toggle]'),
+  countBadges: document.querySelectorAll('[data-nav-notification-count]')
+});
+
+const syncNavbarNotificationBadges = () => {
+  const { countBadges, unreadLabel } = getNavbarNotificationElements();
+  const unread = navbarNotificationsState.items.filter((notification) => !notification.isRead).length;
+
+  countBadges.forEach((badge) => {
+    badge.textContent = String(unread);
+    badge.hidden = unread === 0;
+  });
+
+  if (unreadLabel) {
+    unreadLabel.textContent = `${unread} unread`;
+  }
+};
+
+const renderNavbarNotifications = () => {
+  const { list, refreshBtn, readAllBtn } = getNavbarNotificationElements();
+  if (!list) return;
+
+  syncNavbarNotificationBadges();
+
+  const unread = navbarNotificationsState.items.filter((notification) => !notification.isRead).length;
+  if (refreshBtn) refreshBtn.disabled = navbarNotificationsState.status === 'loading';
+  if (readAllBtn) readAllBtn.disabled = navbarNotificationsState.status === 'loading' || unread === 0;
+
+  if (navbarNotificationsState.status === 'loading') {
+    list.innerHTML = '<div class="nav-notification-panel__message">Loading notifications...</div>';
+    return;
+  }
+
+  if (navbarNotificationsState.status === 'error') {
+    list.innerHTML = '<div class="nav-notification-panel__message nav-notification-panel__message--error">Unable to load notifications right now.</div>';
+    return;
+  }
+
+  if (!navbarNotificationsState.items.length) {
+    list.innerHTML = '<div class="nav-notification-panel__message">No notifications yet. Your updates will appear here.</div>';
+    return;
+  }
+
+  list.innerHTML = navbarNotificationsState.items
+    .slice(0, 8)
+    .map(
+      (notification) => `
+        <article class="nav-notification-item ${notification.isRead ? 'is-read' : ''}">
+          <div class="nav-notification-item__top">
+            <span class="nav-notification-item__type">${escapeNotificationHtml(notification.referenceType || 'Update')}</span>
+            <span class="nav-notification-item__time">${escapeNotificationHtml(formatNavbarNotificationTime(notification.createdAt))}</span>
+          </div>
+          <h4 class="nav-notification-item__title">${escapeNotificationHtml(notification.title || 'Notification')}</h4>
+          <p class="nav-notification-item__copy">${escapeNotificationHtml(notification.message || 'No details available.')}</p>
+          <div class="nav-notification-item__foot">
+            <span class="nav-notification-item__label">${escapeNotificationHtml(notification.referenceLabel || '--')}</span>
+            ${
+              notification.isRead
+                ? '<span class="nav-notification-item__status">Read</span>'
+                : `<button type="button" class="nav-notification-item__read" data-nav-notification-read="${escapeNotificationHtml(
+                    notification._id
+                  )}">Mark Read</button>`
+            }
+          </div>
+        </article>
+      `
+    )
+    .join('');
+};
+
+const loadNavbarNotifications = async ({ silent = false, force = false } = {}) => {
+  const user = getNavbarCurrentUser();
+  const { panel } = getNavbarNotificationElements();
+  if (!user || !panel) return;
+  if (navbarNotificationsState.status === 'loading' && !force) return;
+
+  navbarNotificationsState.scope = getNavbarNotificationScope();
+  navbarNotificationsState.status = 'loading';
+  renderNavbarNotifications();
+
+  try {
+    navbarNotificationsState.items = await SF_UTILS.apiFetch(getNavbarNotificationEndpoint());
+    navbarNotificationsState.status = 'ready';
+  } catch (error) {
+    navbarNotificationsState.items = [];
+    navbarNotificationsState.status = 'error';
+    if (!silent && navbarNotificationsState.open && window.SF_UI && typeof SF_UI.showToast === 'function') {
+      SF_UI.showToast(error.message || 'Unable to load notifications', 'error');
+    }
+  }
+
+  renderNavbarNotifications();
+};
+
+const setNavbarNotificationsOpen = (isOpen) => {
+  const { panel, toggles } = getNavbarNotificationElements();
+  if (!panel) return;
+
+  navbarNotificationsState.open = isOpen;
+  panel.classList.toggle('hidden', !isOpen);
+  panel.setAttribute('aria-hidden', String(!isOpen));
+  toggles.forEach((toggle) => toggle.setAttribute('aria-expanded', String(isOpen)));
+
+  if (isOpen && navbarNotificationsState.status === 'idle') {
+    loadNavbarNotifications({ silent: true });
+  }
+};
+
+const markNavbarNotificationRead = async (notificationId) => {
+  try {
+    await SF_UTILS.apiFetch(`/api/notifications/${notificationId}/read`, {
+      method: 'PATCH'
+    });
+
+    navbarNotificationsState.items = navbarNotificationsState.items.map((notification) =>
+      notification._id === notificationId
+        ? {
+            ...notification,
+            isRead: true
+          }
+        : notification
+    );
+
+    renderNavbarNotifications();
+  } catch (error) {
+    if (window.SF_UI && typeof SF_UI.showToast === 'function') {
+      SF_UI.showToast(error.message || 'Unable to update notification', 'error');
+    }
+  }
+};
+
+const markAllNavbarNotificationsRead = async () => {
+  try {
+    const scopeQuery = navbarNotificationsState.scope === 'admin' ? '?scope=admin' : '';
+    await SF_UTILS.apiFetch(`/api/notifications/read-all${scopeQuery}`, {
+      method: 'PATCH'
+    });
+
+    navbarNotificationsState.items = navbarNotificationsState.items.map((notification) => ({
+      ...notification,
+      isRead: true
+    }));
+
+    renderNavbarNotifications();
+  } catch (error) {
+    if (window.SF_UI && typeof SF_UI.showToast === 'function') {
+      SF_UI.showToast(error.message || 'Unable to update notifications', 'error');
+    }
+  }
+};
+
+const initNavbarNotifications = ({ silent = true } = {}) => {
+  const { panel } = getNavbarNotificationElements();
+  if (!panel) return;
+
+  renderNavbarNotifications();
+  loadNavbarNotifications({ silent, force: true });
+
+  if (navbarNotificationsBound) return;
+  navbarNotificationsBound = true;
+
+  document.addEventListener('click', (event) => {
+    const toggle = event.target.closest('[data-nav-notification-toggle]');
+    const readButton = event.target.closest('[data-nav-notification-read]');
+    const panelEl = document.getElementById('navNotificationPanel');
+    const refreshButton = event.target.closest('#navNotificationRefresh');
+    const readAllButton = event.target.closest('#navNotificationReadAll');
+
+    if (toggle) {
+      event.preventDefault();
+      const nextOpen = toggle.getAttribute('aria-expanded') !== 'true';
+      const mobileMenu = document.getElementById('mobileMenu');
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      if (nextOpen && mobileMenu && mobileMenuBtn) {
+        mobileMenu.classList.add('hidden');
+        mobileMenuBtn.setAttribute('aria-expanded', 'false');
+      }
+      setNavbarNotificationsOpen(nextOpen);
+      return;
+    }
+
+    if (readButton) {
+      event.preventDefault();
+      markNavbarNotificationRead(readButton.dataset.navNotificationRead);
+      return;
+    }
+
+    if (refreshButton) {
+      event.preventDefault();
+      loadNavbarNotifications({ force: true });
+      return;
+    }
+
+    if (readAllButton) {
+      event.preventDefault();
+      markAllNavbarNotificationsRead();
+      return;
+    }
+
+    if (panelEl && navbarNotificationsState.open && !panelEl.contains(event.target)) {
+      setNavbarNotificationsOpen(false);
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && navbarNotificationsState.open) {
+      setNavbarNotificationsOpen(false);
     }
   });
 };
@@ -237,6 +572,58 @@ const setBackgroundImages = () => {
     if (SF_CONFIG.IMAGES[key]) {
       el.style.backgroundImage = `url('${SF_CONFIG.IMAGES[key]}')`;
     }
+  });
+};
+
+const createDatePickerButton = () => {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'date-picker-field__button';
+  button.setAttribute('data-date-picker-trigger', '');
+  button.setAttribute('aria-label', 'Open calendar');
+  button.setAttribute('title', 'Open calendar');
+  button.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm12 8H5v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7ZM6 6a1 1 0 0 0-1 1v1h14V7a1 1 0 0 0-1-1h-1v1a1 1 0 1 1-2 0V6H8v1a1 1 0 1 1-2 0V6Z" fill="currentColor"/>
+    </svg>
+  `;
+  return button;
+};
+
+const openDatePicker = (input) => {
+  if (!input) return;
+
+  try {
+    if (typeof input.showPicker === 'function') {
+      input.showPicker();
+      return;
+    }
+  } catch (error) {
+    // Fall back to focus/click for browsers without showPicker support.
+  }
+
+  input.focus();
+  input.click();
+};
+
+const initDatePickers = (root = document) => {
+  const wrappers = root.querySelectorAll ? root.querySelectorAll('.date-picker-field') : [];
+  wrappers.forEach((wrapper) => {
+    const input = wrapper.querySelector('input[type="date"]');
+    if (!input) return;
+
+    let button = wrapper.querySelector('[data-date-picker-trigger]');
+    if (!button) {
+      button = createDatePickerButton();
+      wrapper.appendChild(button);
+    }
+
+    if (button.dataset.bound === 'true') return;
+    button.dataset.bound = 'true';
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      openDatePicker(input);
+    });
   });
 };
 
@@ -334,6 +721,33 @@ const initBackToTop = () => {
   }
 };
 
+let footerAwareFloatingBound = false;
+
+const syncFloatingControlsOffset = () => {
+  const controls = document.getElementById('floatingControls');
+  const footer = document.querySelector('.site-footer');
+  if (!controls || !footer) return;
+
+  const footerRect = footer.getBoundingClientRect();
+  const overlap = Math.max(0, window.innerHeight - footerRect.top + 24);
+  const lift = Math.min(overlap, Math.max(footerRect.height - 24, 0));
+  controls.style.transform = lift > 0 ? `translateY(-${Math.round(lift)}px)` : 'translateY(0)';
+};
+
+const initFooterAwareFloatingControls = () => {
+  if (footerAwareFloatingBound) {
+    syncFloatingControlsOffset();
+    return;
+  }
+
+  footerAwareFloatingBound = true;
+
+  const sync = () => syncFloatingControlsOffset();
+  window.addEventListener('scroll', sync, { passive: true });
+  window.addEventListener('resize', sync);
+  sync();
+};
+
 window.SF_UI = {
   injectNavbar,
   injectFooter,
@@ -344,10 +758,12 @@ window.SF_UI = {
   hideLoader,
   initReveal,
   setBackgroundImages,
+  initDatePickers,
   initFloatingControls: () => {
     injectFloatingControls();
     initThemeToggle();
     initBackToTop();
+    initFooterAwareFloatingControls();
   },
   setImageSources: () => {
     document.querySelectorAll('[data-img]').forEach((el) => {
