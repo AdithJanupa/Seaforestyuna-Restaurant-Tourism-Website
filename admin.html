@@ -32,7 +32,7 @@
     </script>
     <link rel="stylesheet" href="assets/css/styles.css" />
   </head>
-  <body class="text-white">
+  <body class="admin-dashboard-page text-white">
     <header data-component="navbar"></header>
 
     <section class="pt-32 pb-10 max-w-7xl mx-auto px-6">
@@ -49,15 +49,93 @@
     </section>
 
     <section id="adminContent" class="max-w-7xl mx-auto px-6 pb-20 hidden">
-      <div class="flex flex-wrap gap-3 mb-6">
-        <button class="tab-pill active" data-tab-btn="menu">Menu</button>
+      <div class="admin-tabs flex flex-wrap gap-3 mb-6">
+        <button class="tab-pill active" data-tab-btn="dashboard">Dashboard</button>
+        <button class="tab-pill" data-tab-btn="menu">Menu</button>
         <button class="tab-pill" data-tab-btn="orders">Orders</button>
+        <button class="tab-pill" data-tab-btn="notifications">Notifications</button>
         <button class="tab-pill" data-tab-btn="rooms">Rooms</button>
         <button class="tab-pill" data-tab-btn="roomBookings">Room Bookings</button>
         <button class="tab-pill" data-tab-btn="boats">Boat Rides</button>
         <button class="tab-pill" data-tab-btn="boatBookings">Boat Bookings</button>
         <button class="tab-pill" data-tab-btn="ratings">Ratings</button>
-        <button class="tab-pill" data-tab-btn="content">Content</button>
+      </div>
+
+      <div data-section="dashboard">
+        <div class="glass-card p-6 dashboard-hero-card mb-6">
+          <div class="dashboard-hero-card__head">
+            <div>
+              <span class="badge">Operations Center</span>
+              <h2 class="display text-3xl mt-4">Recent Activities and Live Snapshot</h2>
+              <p class="text-white/70 mt-2">
+                Track recent guest actions, booking flow, revenue, and attention-needed items from one dashboard view.
+              </p>
+            </div>
+            <button class="btn-outline dashboard-refresh-btn" id="dashboardRefresh" type="button">Refresh Dashboard</button>
+          </div>
+          <div id="dashboardKpis" class="dashboard-kpi-grid"></div>
+        </div>
+
+        <div class="dashboard-grid mb-6">
+          <div class="glass-card p-6">
+            <div class="dashboard-section-head">
+              <div>
+                <span class="badge">Activity Graph</span>
+                <h3 class="display text-3xl mt-3">Weekly Activity</h3>
+              </div>
+              <p class="text-white/60 dashboard-section-head__note">Orders, stays, rides, inquiries, and ratings from the last 7 days.</p>
+            </div>
+            <div id="dashboardWeeklyActivity" class="dashboard-activity-chart"></div>
+          </div>
+
+          <div class="glass-card p-6">
+            <div class="dashboard-section-head">
+              <div>
+                <span class="badge">Revenue Graph</span>
+                <h3 class="display text-3xl mt-3">Revenue Streams</h3>
+              </div>
+              <p class="text-white/60 dashboard-section-head__note">Compare food, room, and boat income at a glance.</p>
+            </div>
+            <div id="dashboardRevenueStreams" class="dashboard-bar-list"></div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid dashboard-grid--secondary">
+          <div class="glass-card p-6">
+            <div class="dashboard-section-head">
+              <div>
+                <span class="badge">Recent Activities</span>
+                <h3 class="display text-3xl mt-3">Latest Updates</h3>
+              </div>
+              <p class="text-white/60 dashboard-section-head__note">Newest actions from guests and the website flow.</p>
+            </div>
+            <div id="dashboardRecentActivities" class="dashboard-activity-feed"></div>
+          </div>
+
+          <div class="dashboard-side-stack">
+            <div class="glass-card p-6">
+              <div class="dashboard-section-head">
+                <div>
+                  <span class="badge">Attention Board</span>
+                  <h3 class="display text-3xl mt-3">Status Overview</h3>
+                </div>
+                <p class="text-white/60 dashboard-section-head__note">Operational queues that need admin focus.</p>
+              </div>
+              <div id="dashboardStatusOverview" class="dashboard-bar-list"></div>
+            </div>
+
+            <div class="glass-card p-6">
+              <div class="dashboard-section-head">
+                <div>
+                  <span class="badge">Quick Jump</span>
+                  <h3 class="display text-3xl mt-3">Admin Sections</h3>
+                </div>
+                <p class="text-white/60 dashboard-section-head__note">Open the busiest areas directly from the dashboard.</p>
+              </div>
+              <div id="dashboardQuickLinks" class="dashboard-quick-links"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div data-section="menu">
@@ -83,17 +161,20 @@
       </div>
 
       <div data-section="orders" class="hidden">
-        <div class="flex flex-wrap gap-4 mb-4">
-          <input id="ordersSearch" class="input-field max-w-xs" placeholder="Search orders" />
-          <select id="ordersFilter" class="input-field max-w-xs">
-            <option>All</option>
-            <option>Pending</option>
-            <option>Accepted</option>
-            <option>Preparing</option>
-            <option>Ready</option>
-            <option>Completed</option>
-            <option>Cancelled</option>
-          </select>
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div class="flex flex-wrap gap-4">
+            <input id="ordersSearch" class="input-field max-w-xs" placeholder="Search orders" />
+            <select id="ordersFilter" class="input-field max-w-xs">
+              <option>All</option>
+              <option>Pending</option>
+              <option>Accepted</option>
+              <option>Preparing</option>
+              <option>Ready</option>
+              <option>Completed</option>
+              <option>Cancelled</option>
+            </select>
+          </div>
+          <button class="btn-outline" id="ordersReportBtn">Download PDF Report</button>
         </div>
         <div class="table-wrap overflow-x-auto">
           <table>
@@ -110,6 +191,47 @@
           </table>
         </div>
         <div id="ordersPagination" class="mt-4"></div>
+      </div>
+
+      <div data-section="notifications" class="hidden">
+        <div class="glass-card p-6">
+          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
+            <div>
+              <h2 class="display text-3xl">Notification Management</h2>
+              <p class="text-white/70 mt-2">Review operational alerts from orders, bookings, and guest inquiries.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <button class="btn-outline" id="notificationsRefresh">Refresh</button>
+              <button class="btn-primary" id="notificationsMarkAll">Mark All Read</button>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <select id="notificationsFilter" class="input-field max-w-xs">
+              <option value="All">All</option>
+              <option value="Unread">Unread</option>
+              <option value="Read">Read</option>
+            </select>
+            <div class="flex items-center gap-3 text-sm text-white/70">
+              <span>Unread Inbox</span>
+              <span id="adminNotificationsUnreadCount" class="badge">0</span>
+            </div>
+          </div>
+          <div class="table-wrap overflow-x-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Reference</th>
+                  <th>Title</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="notificationsTable"></tbody>
+            </table>
+          </div>
+          <div id="notificationsPagination" class="mt-4"></div>
+        </div>
       </div>
 
       <div data-section="rooms" class="hidden">
@@ -135,16 +257,19 @@
       </div>
 
       <div data-section="roomBookings" class="hidden">
-        <div class="flex flex-wrap gap-4 mb-4">
-          <input id="roomBookingsSearch" class="input-field max-w-xs" placeholder="Search bookings" />
-          <select id="roomBookingsFilter" class="input-field max-w-xs">
-            <option>All</option>
-            <option>Pending</option>
-            <option>Confirmed</option>
-            <option>Checked-in</option>
-            <option>Checked-out</option>
-            <option>Cancelled</option>
-          </select>
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div class="flex flex-wrap gap-4">
+            <input id="roomBookingsSearch" class="input-field max-w-xs" placeholder="Search bookings" />
+            <select id="roomBookingsFilter" class="input-field max-w-xs">
+              <option>All</option>
+              <option>Pending</option>
+              <option>Confirmed</option>
+              <option>Checked-in</option>
+              <option>Checked-out</option>
+              <option>Cancelled</option>
+            </select>
+          </div>
+          <button class="btn-outline" id="roomBookingsReportBtn">Download PDF Report</button>
         </div>
         <div class="table-wrap overflow-x-auto">
           <table>
@@ -186,15 +311,18 @@
       </div>
 
       <div data-section="boatBookings" class="hidden">
-        <div class="flex flex-wrap gap-4 mb-4">
-          <input id="boatBookingsSearch" class="input-field max-w-xs" placeholder="Search boat bookings" />
-          <select id="boatBookingsFilter" class="input-field max-w-xs">
-            <option>All</option>
-            <option>Pending</option>
-            <option>Confirmed</option>
-            <option>Completed</option>
-            <option>Cancelled</option>
-          </select>
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+          <div class="flex flex-wrap gap-4">
+            <input id="boatBookingsSearch" class="input-field max-w-xs" placeholder="Search boat bookings" />
+            <select id="boatBookingsFilter" class="input-field max-w-xs">
+              <option>All</option>
+              <option>Pending</option>
+              <option>Confirmed</option>
+              <option>Completed</option>
+              <option>Cancelled</option>
+            </select>
+          </div>
+          <button class="btn-outline" id="boatBookingsReportBtn">Download PDF Report</button>
         </div>
         <div class="table-wrap overflow-x-auto">
           <table>
@@ -286,27 +414,6 @@
         </div>
       </div>
 
-      <div data-section="content" class="hidden">
-        <form id="contentForm" class="glass-card p-8 space-y-4">
-          <div>
-            <label class="text-sm text-white/70">About Title</label>
-            <input id="aboutTitle" class="input-field mt-1" />
-          </div>
-          <div>
-            <label class="text-sm text-white/70">About Body</label>
-            <textarea id="aboutBody" class="input-field mt-1" rows="4"></textarea>
-          </div>
-          <div>
-            <label class="text-sm text-white/70">Ratings Title</label>
-            <input id="ratingsTitle" class="input-field mt-1" />
-          </div>
-          <div>
-            <label class="text-sm text-white/70">Ratings Body</label>
-            <textarea id="ratingsBody" class="input-field mt-1" rows="4"></textarea>
-          </div>
-          <button class="btn-primary" type="submit">Update Content</button>
-        </form>
-      </div>
     </section>
 
     <div id="adminModal" class="modal-backdrop">
@@ -323,6 +430,9 @@
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/components.js"></script>
     <script src="assets/js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <script src="assets/js/pdf.js"></script>
     <script src="assets/js/admin.js"></script>
   </body>
 </html>

@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
   SF_UI.setActiveNav();
   SF_UI.initMobileMenu();
   SF_UI.initReveal();
+  SF_UI.initDatePickers();
   SF_UI.initFloatingControls();
   initQuickBooking();
   initParallax();

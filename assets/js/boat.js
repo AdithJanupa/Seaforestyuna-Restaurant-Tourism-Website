@@ -44,6 +44,35 @@ const formatBoatBookingDate = (value) => {
   return boatBookingDateFormatter.format(date);
 };
 
+const isBoatPlanAvailable = (boat) =>
+  Boolean(boat) && boat.isActive !== false && String(boat.status || '').toLowerCase() !== 'inactive';
+
+const getBoatTimeSlots = (boat) => {
+  if (!boat || !Array.isArray(boat.timeSlots)) return [];
+  return [...new Set(boat.timeSlots.map((slot) => String(slot || '').trim()).filter(Boolean))];
+};
+
+const updateBoatTimeSelect = (boat) => {
+  const timeSelect = document.getElementById('boatTime');
+  if (!timeSelect) return;
+
+  const timeSlots = getBoatTimeSlots(boat);
+
+  if (timeSlots.length) {
+    timeSelect.innerHTML = timeSlots.map((slot) => `<option value="${escapeHtml(slot)}">${escapeHtml(slot)}</option>`).join('');
+    timeSelect.disabled = false;
+    return;
+  }
+
+  timeSelect.innerHTML = '<option value="">No time slots available</option>';
+  timeSelect.disabled = true;
+};
+
+const getDefaultBoatSelection = () => {
+  const visibleBoats = boatData.filter(isBoatPlanAvailable);
+  return visibleBoats.find((boat) => getBoatTimeSlots(boat).length) || visibleBoats[0] || boatData[0] || null;
+};
+
 const updateBookedRidesCount = () => {
   const count = boatBookings.length;
   const countEl = document.getElementById('bookedRidesCount');
@@ -102,6 +131,9 @@ const openBookingModal = ({ badge, title, content }) => {
   badgeEl.textContent = badge;
   titleEl.textContent = title;
   body.innerHTML = content;
+  if (window.SF_UI && typeof SF_UI.initDatePickers === 'function') {
+    SF_UI.initDatePickers(body);
+  }
   modal.classList.add('active');
 };
 
@@ -331,9 +363,22 @@ const handlePrintBookedRides = () => {
 
 const toCsvCell = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
 
-const handleExportBookedRides = () => {
+const handleExportBookedRides = async () => {
   if (!boatBookings.length) {
     SF_UI.showToast('No booked rides available to export', 'error');
+    return;
+  }
+
+  if (!window.SF_PDF || typeof window.SF_PDF.downloadBookedRidesPdf !== 'function') {
+    SF_UI.showToast('PDF export is unavailable right now', 'error');
+    return;
+  }
+
+  try {
+    await window.SF_PDF.downloadBookedRidesPdf(boatBookings, boatData);
+    return;
+  } catch (error) {
+    SF_UI.showToast(error.message || 'Unable to export booked rides PDF', 'error');
     return;
   }
 
@@ -367,7 +412,11 @@ const loadBoats = async () => {
     boatData = [];
     SF_UI.showToast('Unable to load boat rides', 'error');
   }
+
   renderBoats();
+
+  const defaultBoat = (selectedBoat && boatData.find((boat) => boat._id === selectedBoat._id)) || getDefaultBoatSelection();
+  selectBoat(defaultBoat?._id || '');
 };
 
 const renderBoats = () => {
@@ -423,13 +472,10 @@ const renderBoats = () => {
 const selectBoat = (boatId) => {
   selectedBoat = boatData.find((boat) => boat._id === boatId);
   const label = document.getElementById('selectedBoat');
-  const timeSelect = document.getElementById('boatTime');
   if (label) {
     label.textContent = selectedBoat ? `${selectedBoat.name} (${SF_UTILS.formatCurrency(selectedBoat.price)}/guest)` : 'Select a boat ride';
   }
-  if (timeSelect && selectedBoat) {
-    timeSelect.innerHTML = (selectedBoat.timeSlots || []).map((slot) => `<option value="${slot}">${slot}</option>`).join('');
-  }
+  updateBoatTimeSelect(selectedBoat);
 };
 
 const getEditableBoatPlans = (currentBoatId = '') => {
@@ -586,7 +632,9 @@ const openBoatBookingEdit = (booking) => {
         </label>
         <label class="booking-field">
           <span>Date</span>
-          <input name="date" type="date" class="input-field" value="${escapeHtml(booking.date || '')}" required />
+          <div class="date-picker-field">
+            <input name="date" type="date" class="input-field" value="${escapeHtml(booking.date || '')}" required />
+          </div>
         </label>
         <label class="booking-field">
           <span>Time Slot</span>
@@ -729,6 +777,7 @@ const initBoatForm = () => {
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!selectedBoat) return SF_UI.showToast('Select a boat experience first', 'error');
+    if (!form.timeSlot.value) return SF_UI.showToast('Choose a boat ride with an available time slot', 'error');
     const isAuth = await SF_UTILS.isAuthenticated();
     if (!isAuth) {
       SF_UI.showToast('Login required to reserve', 'error');

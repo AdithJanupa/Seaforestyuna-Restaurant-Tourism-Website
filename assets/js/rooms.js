@@ -44,6 +44,12 @@ const formatRoomBookingDate = (value) => {
   return roomBookingDateFormatter.format(date);
 };
 
+const formatRoomCapacityBadge = (capacity) => {
+  const guestCount = Number(capacity) || 0;
+  if (!guestCount) return 'Guest details available on booking';
+  return `Up to ${guestCount} guest${guestCount === 1 ? '' : 's'}`;
+};
+
 const updateBookedRoomsCount = () => {
   const count = roomBookings.length;
   const countEl = document.getElementById('bookedRoomsCount');
@@ -102,6 +108,9 @@ const openBookingModal = ({ badge, title, content }) => {
   badgeEl.textContent = badge;
   titleEl.textContent = title;
   body.innerHTML = content;
+  if (window.SF_UI && typeof SF_UI.initDatePickers === 'function') {
+    SF_UI.initDatePickers(body);
+  }
   modal.classList.add('active');
 };
 
@@ -326,35 +335,22 @@ const handlePrintBookedRooms = () => {
   printWindow.print();
 };
 
-const toCsvCell = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
-
-const handleExportBookedRooms = () => {
+const handleExportBookedRooms = async () => {
   if (!roomBookings.length) {
     SF_UI.showToast('No booked rooms available to export', 'error');
     return;
   }
 
-  const csvRows = [
-    ['Booking ID', 'Name', 'Check-in', 'Check-out', 'Count'],
-    ...roomBookings.map((booking) => [
-      booking.bookingRef || '--',
-      booking.roomName || 'Room Booking',
-      formatRoomBookingDate(booking.checkIn),
-      formatRoomBookingDate(booking.checkOut),
-      Number(booking.guests) || 0
-    ])
-  ];
+  if (!window.SF_PDF || typeof window.SF_PDF.downloadBookedRoomsPdf !== 'function') {
+    SF_UI.showToast('PDF export is unavailable right now', 'error');
+    return;
+  }
 
-  const csv = csvRows.map((row) => row.map(toCsvCell).join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'seaforestuna-room-bookings.csv';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+  try {
+    await window.SF_PDF.downloadBookedRoomsPdf(roomBookings, roomData);
+  } catch (error) {
+    SF_UI.showToast(error.message || 'Unable to export booked rooms PDF', 'error');
+  }
 };
 
 const loadRooms = async () => {
@@ -395,6 +391,7 @@ const renderRooms = () => {
           <p class="text-sm text-white/70">${room.description}</p>
         </div>
         <div class="flex flex-wrap gap-2">
+          <span class="badge">${escapeHtml(formatRoomCapacityBadge(room.capacity))}</span>
           ${(room.amenities || []).slice(0, 4).map((amenity) => `<span class="badge">${amenity}</span>`).join('')}
         </div>
         <div class="flex items-center justify-between gap-3">
@@ -560,11 +557,15 @@ const openRoomBookingEdit = (booking) => {
         </label>
         <label class="booking-field">
           <span>Check-in</span>
-          <input name="checkIn" type="date" class="input-field" value="${escapeHtml(booking.checkIn || '')}" required />
+          <div class="date-picker-field">
+            <input name="checkIn" type="date" class="input-field" value="${escapeHtml(booking.checkIn || '')}" required />
+          </div>
         </label>
         <label class="booking-field">
           <span>Check-out</span>
-          <input name="checkOut" type="date" class="input-field" value="${escapeHtml(booking.checkOut || '')}" required />
+          <div class="date-picker-field">
+            <input name="checkOut" type="date" class="input-field" value="${escapeHtml(booking.checkOut || '')}" required />
+          </div>
         </label>
         <label class="booking-field">
           <span>Guests</span>

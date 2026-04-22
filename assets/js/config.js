@@ -187,7 +187,88 @@ const pickMenuImage = (id, category) => {
   return pool[hashString(id) % pool.length];
 };
 
-const FALLBACK_MENU = [];
+const FALLBACK_MENU = [
+  {
+    _id: 'demo-starters-lagoon-prawns',
+    id: 'demo-starters-lagoon-prawns',
+    category: 'Starters',
+    name: 'Crispy Lagoon Prawns',
+    description: 'Golden-fried prawns with lime aioli and sea salt flakes.',
+    price: 18,
+    image: pickMenuImage('demo-starters-lagoon-prawns', 'Starters'),
+    isAvailable: true
+  },
+  {
+    _id: 'demo-soups-coconut-bisque',
+    id: 'demo-soups-coconut-bisque',
+    category: 'Soups',
+    name: 'Coconut Seafood Bisque',
+    description: 'Silky coconut broth with reef fish, prawns, and curry leaf oil.',
+    price: 11,
+    image: pickMenuImage('demo-soups-coconut-bisque', 'Soups'),
+    isAvailable: true
+  },
+  {
+    _id: 'demo-sri-lankan-rice-curry',
+    id: 'demo-sri-lankan-rice-curry',
+    category: 'Sri Lankan',
+    name: 'Coastal Rice and Curry',
+    description: 'Steamed rice, dhal, tempered vegetables, sambol, and daily curry selection.',
+    price: 16,
+    image: pickMenuImage('demo-sri-lankan-rice-curry', 'Sri Lankan'),
+    isAvailable: true
+  },
+  {
+    _id: 'demo-curries-tuna-thiyal',
+    id: 'demo-curries-tuna-thiyal',
+    category: 'Curries',
+    name: 'Tuna Ambul Thiyal',
+    description: 'Sour black pepper tuna curry finished with roasted spices.',
+    price: 19,
+    image: pickMenuImage('demo-curries-tuna-thiyal', 'Curries'),
+    isAvailable: true
+  },
+  {
+    _id: 'demo-grilled-reef-fish',
+    id: 'demo-grilled-reef-fish',
+    category: 'Grilled',
+    name: 'Char-Grilled Reef Fish',
+    description: 'Fresh catch served with herb butter, salad, and crisp chips.',
+    price: 24,
+    image: pickMenuImage('demo-grilled-reef-fish', 'Grilled'),
+    isAvailable: true
+  },
+  {
+    _id: 'demo-desserts-palm-pudding',
+    id: 'demo-desserts-palm-pudding',
+    category: 'Desserts',
+    name: 'Coconut Palm Pudding',
+    description: 'Soft coconut pudding with jaggery caramel and toasted cashews.',
+    price: 8,
+    image: pickMenuImage('demo-desserts-palm-pudding', 'Desserts'),
+    isAvailable: true
+  },
+  {
+    _id: 'demo-hot-ceylon-latte',
+    id: 'demo-hot-ceylon-latte',
+    category: 'Hot',
+    name: 'Ceylon Spice Latte',
+    description: 'Fresh espresso, steamed milk, cinnamon, and cardamom.',
+    price: 5,
+    image: pickMenuImage('demo-hot-ceylon-latte', 'Hot'),
+    isAvailable: true
+  },
+  {
+    _id: 'demo-cold-sea-salt-mocha',
+    id: 'demo-cold-sea-salt-mocha',
+    category: 'Cold',
+    name: 'Iced Sea Salt Mocha',
+    description: 'Chilled mocha with sea-salt cream and dark cocoa.',
+    price: 6,
+    image: pickMenuImage('demo-cold-sea-salt-mocha', 'Cold'),
+    isAvailable: true
+  }
+];
 
 const CONFIG = {
   API_BASE_URL: localStorage.getItem('SF_API_BASE') || 'http://localhost:5000',

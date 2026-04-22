@@ -1,9 +1,11 @@
 (() => {
 let menuItems = [];
 let categoryObserver = null;
+let menuSource = 'live';
 
 const categoryDetails = SF_CONFIG.MENU_CATEGORY_DETAILS || {};
 const categoryOrder = SF_CONFIG.MENU_CATEGORY_ORDER || [];
+const fallbackMenu = Array.isArray(SF_CONFIG.FALLBACK_MENU) ? SF_CONFIG.FALLBACK_MENU.filter(Boolean) : [];
 
 const slugify = (value) =>
   String(value || '')
@@ -19,9 +21,21 @@ const getOrderedCategories = () => {
   return [...categoryOrder.filter((category) => available.includes(category)), ...available.filter((category) => !categoryOrder.includes(category))];
 };
 
-const getItemPriceLabel = (item) => item.priceLabel || SF_UTILS.formatLkrPrice(item.price || 0);
+const getItemPriceLabel = (item) => {
+  if (item.marketPrice) {
+    return item.priceLabel || 'Market Price';
+  }
+
+  return SF_UTILS.formatPrice(item.price || 0);
+};
 
 const getItemImage = (item) => item.image || (categoryDetails[item.category] && categoryDetails[item.category].image) || SF_CONFIG.IMAGES.menuHero;
+
+const applyFallbackMenu = () => {
+  menuItems = [...fallbackMenu];
+  menuSource = menuItems.length ? 'fallback' : 'empty';
+  return menuItems.length > 0;
+};
 
 const setActiveCategoryLink = (category) => {
   document.querySelectorAll('[data-category-link]').forEach((link) => {
@@ -104,54 +118,67 @@ const renderMenu = () => {
     return;
   }
 
-  container.innerHTML = categories
-    .map((category, index) => {
-      const details = categoryDetails[category] || {};
-      const items = menuItems.filter((item) => item.category === category);
+  const fallbackNotice =
+    menuSource === 'fallback'
+      ? `
+        <div class="glass-card p-6 mb-8 reveal">
+          <span class="badge">Demo Menu</span>
+          <h2 class="display text-3xl mt-4">Showing sample menu items</h2>
+          <p class="text-white/70 mt-3">The live backend menu is not available yet, so this page is using the built-in demo menu.</p>
+        </div>
+      `
+      : '';
 
-      return `
-        <section class="menu-category-section glass-card reveal" id="${getSectionId(category)}" data-menu-section="${category}">
-          <div class="menu-category-head">
-            <div class="menu-category-copy">
-              <span class="badge">${details.label || `Category ${String(index + 1).padStart(2, '0')}`}</span>
-              <h2 class="display text-4xl mt-4">${category}</h2>
-              ${details.note ? `<p class="menu-category-note">${details.note}</p>` : ''}
+  container.innerHTML =
+    fallbackNotice +
+    categories
+      .map((category, index) => {
+        const details = categoryDetails[category] || {};
+        const items = menuItems.filter((item) => item.category === category);
+
+        return `
+          <section class="menu-category-section glass-card reveal" id="${getSectionId(category)}" data-menu-section="${category}">
+            <div class="menu-category-head">
+              <div class="menu-category-copy">
+                <span class="badge">${details.label || `Category ${String(index + 1).padStart(2, '0')}`}</span>
+                <h2 class="display text-4xl mt-4">${category}</h2>
+                ${details.note ? `<p class="menu-category-note">${details.note}</p>` : ''}
+              </div>
+              <a href="#menuTop" class="btn-outline menu-category-top">Top</a>
             </div>
-            <a href="#menuTop" class="btn-outline menu-category-top">Top</a>
-          </div>
 
-          <div class="menu-item-grid">
-            ${items
-              .map(
-                (item) => `
-                  <article class="menu-item-card">
-                    <div class="menu-item-media image-card">
-                      <img src="${getItemImage(item)}" alt="${item.name}" loading="lazy" />
-                    </div>
-                    <div class="menu-item-content">
-                      <div class="menu-item-top">
-                        <h3 class="menu-item-name">${item.name}</h3>
-                        <span class="menu-item-price ${item.marketPrice ? 'menu-item-price--market' : ''}">${getItemPriceLabel(item)}</span>
+            <div class="menu-item-grid">
+              ${items
+                .map(
+                  (item) => `
+                    <article class="menu-item-card">
+                      <div class="menu-item-media image-card">
+                        <img src="${getItemImage(item)}" alt="${item.name}" loading="lazy" />
                       </div>
-                      <p class="menu-item-description">${item.description || 'SeaForestuna signature selection.'}</p>
-                    </div>
-                    <div class="menu-item-footer">
-                      <span class="badge">${category}</span>
-                      ${
-                        item.marketPrice
-                          ? '<a href="contact.html" class="btn-outline menu-item-action">Ask Price</a>'
-                          : `<button class="btn-primary menu-item-action" data-add="${item._id}">Add</button>`
-                      }
-                    </div>
-                  </article>
-                `
-              )
-              .join('')}
-          </div>
-        </section>
-      `;
-    })
-    .join('');
+                      <div class="menu-item-content">
+                        <div class="menu-item-top">
+                          <h3 class="menu-item-name">${item.name}</h3>
+                          <span class="menu-item-price ${item.marketPrice ? 'menu-item-price--market' : ''}">${getItemPriceLabel(item)}</span>
+                        </div>
+                        <p class="menu-item-description">${item.description || 'SeaForestuna signature selection.'}</p>
+                      </div>
+                      <div class="menu-item-footer">
+                        <span class="badge">${category}</span>
+                        ${
+                          item.marketPrice
+                            ? '<a href="contact.html" class="btn-outline menu-item-action">Ask Price</a>'
+                            : `<button class="btn-primary menu-item-action" data-add="${item._id}">Add</button>`
+                        }
+                      </div>
+                    </article>
+                  `
+                )
+                .join('')}
+            </div>
+          </section>
+        `;
+      })
+      .join('');
 
   container.querySelectorAll('[data-add]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -181,15 +208,30 @@ const syncCartPreview = () => {
 
   if (countEl) countEl.textContent = count;
   if (heroCountEl) heroCountEl.textContent = count;
-  if (subtotalEl) subtotalEl.textContent = SF_UTILS.formatLkrPrice(subtotal);
+  if (subtotalEl) subtotalEl.textContent = SF_UTILS.formatPrice(subtotal);
 };
 
 const loadMenu = async () => {
+  menuSource = 'live';
+
   try {
-    menuItems = await SF_UTILS.apiFetch('/api/menu');
+    const items = await SF_UTILS.apiFetch('/api/menu');
+    if (Array.isArray(items) && items.length) {
+      menuItems = items;
+    } else if (applyFallbackMenu()) {
+      SF_UI.showToast('Live menu is empty. Showing demo menu.', 'info');
+    } else {
+      menuItems = [];
+      menuSource = 'empty';
+    }
   } catch (error) {
-    menuItems = [];
-    SF_UI.showToast('Unable to load menu items', 'error');
+    if (applyFallbackMenu()) {
+      SF_UI.showToast('Backend unavailable. Showing demo menu.', 'info');
+    } else {
+      menuItems = [];
+      menuSource = 'empty';
+      SF_UI.showToast('Unable to load menu items', 'error');
+    }
   }
 
   renderCategories();

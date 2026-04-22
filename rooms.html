@@ -82,7 +82,7 @@
             <div class="room-bookings-drawer__actions">
               <button id="bookedRoomsRefresh" class="btn-outline room-bookings-toolbar-btn" type="button">Refresh</button>
               <button id="bookedRoomsPrint" class="btn-outline room-bookings-toolbar-btn" type="button">Print List</button>
-              <button id="bookedRoomsExport" class="btn-primary room-bookings-toolbar-btn" type="button">Export CSV</button>
+              <button id="bookedRoomsExport" class="btn-primary room-bookings-toolbar-btn" type="button">Export PDF</button>
             </div>
           </div>
 
@@ -117,7 +117,7 @@
 
     <section class="max-w-7xl mx-auto px-6 pb-20" id="bookingSection">
       <div class="glass-card p-8">
-        <div class="flex items-center gap-4 mb-6">
+        <div class="flex flex-wrap items-center gap-4 mb-6">
           <div class="progress-step active"><span class="progress-dot"></span>Select Room</div>
           <div class="progress-step"><span class="progress-dot"></span>Dates</div>
           <div class="progress-step"><span class="progress-dot"></span>Confirm</div>
@@ -127,11 +127,15 @@
         <form id="roomBookingForm" class="grid md:grid-cols-2 gap-4">
           <div>
             <label class="text-sm text-white/70">Check-in</label>
-            <input id="checkIn" name="checkIn" type="date" class="input-field mt-1" required />
+            <div class="date-picker-field mt-1">
+              <input id="checkIn" name="checkIn" type="date" class="input-field" required />
+            </div>
           </div>
           <div>
             <label class="text-sm text-white/70">Check-out</label>
-            <input id="checkOut" name="checkOut" type="date" class="input-field mt-1" required />
+            <div class="date-picker-field mt-1">
+              <input id="checkOut" name="checkOut" type="date" class="input-field" required />
+            </div>
           </div>
           <div>
             <label class="text-sm text-white/70">Guests</label>
@@ -176,6 +180,9 @@
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/components.js"></script>
     <script src="assets/js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <script src="assets/js/pdf.js"></script>
     <script src="assets/js/rooms.js"></script>
   </body>
 </html>

@@ -14,7 +14,16 @@ const formatCurrency = (value, options = {}) => {
   }).format(value);
 };
 
-const formatLkrPrice = (value) => `LKR ${new Intl.NumberFormat('en-LK', { maximumFractionDigits: 0 }).format(value)}/-`;
+const formatPrice = (value, options = {}) =>
+  formatCurrency(Number(value) || 0, {
+    locale: 'en-US',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+    ...options
+  });
+
+const formatLkrPrice = (value, options = {}) => formatPrice(value, options);
 
 const CART_STORAGE_KEY = 'sf_cart';
 const ADMIN_AUTH_STORAGE_KEY = 'sf_admin_auth';
@@ -307,6 +316,7 @@ const apiFetch = async (path, options = {}) => {
 
 window.SF_UTILS = {
   formatCurrency,
+  formatPrice,
   formatLkrPrice,
   generateTimeSlots,
   waitForAuth,
