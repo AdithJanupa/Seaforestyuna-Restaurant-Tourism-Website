@@ -13,6 +13,9 @@ const MENU_CATEGORY_ORDER = [
   'Kottu',
   'Fried Rice',
   'Grilled',
+  'Mains',
+  'Seafood Specials',
+  'Drinks',
   'Desserts',
   'Hot',
   'Cold'
@@ -88,6 +91,21 @@ const MENU_CATEGORY_DETAILS = {
     label: 'Served with Chips and Salad',
     note: 'Char-grilled seafood and meats, from tuna steak to mixed grilled platters.',
     image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=1200&q=80'
+  },
+  Mains: {
+    label: 'Signature Mains',
+    note: 'Heartier chef plates with seafood, poultry, and coastal herb sauces.',
+    image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=1200&q=80'
+  },
+  'Seafood Specials': {
+    label: 'Ocean Specials',
+    note: 'Premium seafood plates finished with tropical sides and house glazes.',
+    image: 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=1200&q=80'
+  },
+  Drinks: {
+    label: 'Island Refreshers',
+    note: 'Fresh citrus, mint, iced fruit, and sparkling drinks for warm coastal days.',
+    image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=1200&q=80'
   },
   Desserts: {
     label: 'Sweet Finish',
@@ -166,6 +184,9 @@ const MENU_CATEGORY_IMAGE_TYPES = {
   Kottu: 'savory',
   'Fried Rice': 'savory',
   Grilled: 'seafood',
+  Mains: 'savory',
+  'Seafood Specials': 'seafood',
+  Drinks: 'drinks',
   Desserts: 'dessert',
   Hot: 'drinks',
   Cold: 'drinks'
@@ -239,6 +260,76 @@ const FALLBACK_MENU = [
     isAvailable: true
   },
   {
+    _id: 'demo-mains-coastal-herb-snapper',
+    id: 'demo-mains-coastal-herb-snapper',
+    category: 'Mains',
+    name: 'Coastal Herb Snapper',
+    description: 'Herb crust, seafoam beurre blanc, grilled fennel, and lemon potatoes.',
+    price: 34,
+    image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=1200&q=80',
+    isAvailable: true
+  },
+  {
+    _id: 'demo-mains-coconut-lemongrass-chicken',
+    id: 'demo-mains-coconut-lemongrass-chicken',
+    category: 'Mains',
+    name: 'Coconut Lemongrass Chicken',
+    description: 'Grilled chicken, coconut lemongrass sauce, jasmine rice, and garden greens.',
+    price: 27,
+    image: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=1200&q=80',
+    isAvailable: true
+  },
+  {
+    _id: 'demo-mains-tamarind-beef-short-rib',
+    id: 'demo-mains-tamarind-beef-short-rib',
+    category: 'Mains',
+    name: 'Tamarind Beef Short Rib',
+    description: 'Slow-braised beef short rib with tamarind glaze, root mash, and crispy shallots.',
+    price: 36,
+    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80',
+    isAvailable: true
+  },
+  {
+    _id: 'demo-seafood-charcoal-lobster-tail',
+    id: 'demo-seafood-charcoal-lobster-tail',
+    category: 'Seafood Specials',
+    name: 'Charcoal Lobster Tail',
+    description: 'Smoked chili glaze, coconut rice, charred lime, and herb salad.',
+    price: 42,
+    image: 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=1200&q=80',
+    isAvailable: true
+  },
+  {
+    _id: 'demo-seafood-lagoon-garlic-prawns',
+    id: 'demo-seafood-lagoon-garlic-prawns',
+    category: 'Seafood Specials',
+    name: 'Lagoon Garlic Prawns',
+    description: 'Butter-seared prawns with garlic, chili flakes, lime, and coconut herb rice.',
+    price: 31,
+    image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=1200&q=80',
+    isAvailable: true
+  },
+  {
+    _id: 'demo-drinks-mangrove-citrus-fizz',
+    id: 'demo-drinks-mangrove-citrus-fizz',
+    category: 'Drinks',
+    name: 'Mangrove Citrus Fizz',
+    description: 'Yuzu, lime, mint, sparkling soda, and a sea-salt rim.',
+    price: 9,
+    image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=1200&q=80',
+    isAvailable: true
+  },
+  {
+    _id: 'demo-drinks-passionfruit-mint-cooler',
+    id: 'demo-drinks-passionfruit-mint-cooler',
+    category: 'Drinks',
+    name: 'Passionfruit Mint Cooler',
+    description: 'Fresh passionfruit, mint, lime, crushed ice, and chilled soda.',
+    price: 8,
+    image: 'https://images.unsplash.com/photo-1502741224143-90386d7f8c82?auto=format&fit=crop&w=1200&q=80',
+    isAvailable: true
+  },
+  {
     _id: 'demo-desserts-palm-pudding',
     id: 'demo-desserts-palm-pudding',
     category: 'Desserts',
@@ -246,6 +337,16 @@ const FALLBACK_MENU = [
     description: 'Soft coconut pudding with jaggery caramel and toasted cashews.',
     price: 8,
     image: pickMenuImage('demo-desserts-palm-pudding', 'Desserts'),
+    isAvailable: true
+  },
+  {
+    _id: 'demo-desserts-sand-dune-tiramisu',
+    id: 'demo-desserts-sand-dune-tiramisu',
+    category: 'Desserts',
+    name: 'Sand Dune Tiramisu',
+    description: 'Espresso cream, cacao dust, almond crumble, and a silky mascarpone layer.',
+    price: 12,
+    image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=80',
     isAvailable: true
   },
   {
@@ -269,6 +370,10 @@ const FALLBACK_MENU = [
     isAvailable: true
   }
 ];
+
+const EXTRA_MENU_DISHES = FALLBACK_MENU.filter((item) =>
+  ['Mains', 'Seafood Specials', 'Drinks', 'Desserts'].includes(item.category)
+);
 
 const CONFIG = {
   API_BASE_URL: localStorage.getItem('SF_API_BASE') || 'http://localhost:5000',
@@ -309,6 +414,7 @@ const CONFIG = {
   MENU_CATEGORY_ORDER,
   MENU_CATEGORY_DETAILS,
   FALLBACK_MENU,
+  EXTRA_MENU_DISHES,
   FALLBACK_ROOMS: [],
   FALLBACK_BOATS: []
 };

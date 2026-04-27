@@ -62,8 +62,16 @@ const seed = async () => {
         description: 'Smoked chili glaze, coconut rice, charred lime.',
         price: 42,
         category: 'Seafood Specials',
-        image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80',
+        image: 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?auto=format&fit=crop&w=1200&q=80',
         tags: ['signature'],
+        isAvailable: true
+      },
+      {
+        name: 'Lagoon Garlic Prawns',
+        description: 'Butter-seared prawns with garlic, chili flakes, lime, and coconut herb rice.',
+        price: 31,
+        category: 'Seafood Specials',
+        image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=1200&q=80',
         isAvailable: true
       },
       {
@@ -71,7 +79,23 @@ const seed = async () => {
         description: 'Herb crust, seafoam beurre blanc, grilled fennel.',
         price: 34,
         category: 'Mains',
-        image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=1200&q=80',
+        image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=1200&q=80',
+        isAvailable: true
+      },
+      {
+        name: 'Coconut Lemongrass Chicken',
+        description: 'Grilled chicken, coconut lemongrass sauce, jasmine rice, and garden greens.',
+        price: 27,
+        category: 'Mains',
+        image: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=1200&q=80',
+        isAvailable: true
+      },
+      {
+        name: 'Tamarind Beef Short Rib',
+        description: 'Slow-braised beef short rib with tamarind glaze, root mash, and crispy shallots.',
+        price: 36,
+        category: 'Mains',
+        image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80',
         isAvailable: true
       },
       {
@@ -83,11 +107,27 @@ const seed = async () => {
         isAvailable: true
       },
       {
+        name: 'Passionfruit Mint Cooler',
+        description: 'Fresh passionfruit, mint, lime, crushed ice, and chilled soda.',
+        price: 8,
+        category: 'Drinks',
+        image: 'https://images.unsplash.com/photo-1502741224143-90386d7f8c82?auto=format&fit=crop&w=1200&q=80',
+        isAvailable: true
+      },
+      {
         name: 'Sand Dune Tiramisu',
         description: 'Espresso cream, cacao dust, almond crumble.',
         price: 12,
         category: 'Desserts',
         image: 'https://images.unsplash.com/photo-1481391032119-d89fee407e44?auto=format&fit=crop&w=1200&q=80',
+        isAvailable: true
+      },
+      {
+        name: 'Coconut Palm Pudding',
+        description: 'Soft coconut pudding with jaggery caramel and toasted cashews.',
+        price: 8,
+        category: 'Desserts',
+        image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=1200&q=80',
         isAvailable: true
       }
     ]);

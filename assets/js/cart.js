@@ -1,6 +1,33 @@
 (() => {
+const LAST_ORDER_STORAGE_KEY = 'sf_latest_order_receipt';
 let cart = [];
 let latestOrder = null;
+
+const getStoredLatestOrder = () => {
+  try {
+    const raw = localStorage.getItem(LAST_ORDER_STORAGE_KEY);
+    if (!raw) return null;
+
+    const order = JSON.parse(raw);
+    if (!order || !Array.isArray(order.items) || !order.items.length) return null;
+    return order;
+  } catch (error) {
+    localStorage.removeItem(LAST_ORDER_STORAGE_KEY);
+    return null;
+  }
+};
+
+const saveLatestOrder = (order) => {
+  try {
+    if (!order) {
+      localStorage.removeItem(LAST_ORDER_STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(order));
+  } catch (error) {
+    // Receipt persistence is helpful but should never block checkout.
+  }
+};
 
 const getCart = () => {
   cart = SF_UTILS.getCart();
@@ -117,7 +144,7 @@ const formatDateTime = (value) => {
 };
 
 const formatOrderType = (value) => {
-  const label = String(value || 'pickup').replace(/-/g, ' ');
+  const label = String(value || 'dine-in').replace(/-/g, ' ');
   return label.charAt(0).toUpperCase() + label.slice(1);
 };
 
@@ -127,9 +154,11 @@ const renderOrderConfirmation = (order) => {
 
   if (!order) {
     confirmation.innerHTML = '';
+    confirmation.classList.add('hidden');
     return;
   }
 
+  confirmation.classList.remove('hidden');
   const itemLines = (order.items || [])
     .map(
       (item) => `
@@ -170,7 +199,7 @@ const renderOrderConfirmation = (order) => {
       : '';
 
   confirmation.innerHTML = `
-    <div class="glass-card p-6 mt-4 space-y-4">
+    <div class="glass-card p-6 space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <h3 class="text-2xl mb-2">Order Confirmed</h3>
@@ -244,9 +273,9 @@ const initOrderForm = () => {
 
   const updateOrderTypeFields = () => {
     const selected = form.querySelector('input[name="orderType"]:checked');
-    const type = selected ? selected.value : 'pickup';
-    deliveryFields.classList.toggle('hidden', type !== 'delivery');
-    dineInFields.classList.toggle('hidden', type !== 'dine-in');
+    const type = selected ? selected.value : 'dine-in';
+    if (deliveryFields) deliveryFields.classList.toggle('hidden', type !== 'delivery');
+    if (dineInFields) dineInFields.classList.toggle('hidden', type !== 'dine-in');
   };
 
   form.querySelectorAll('input[name="orderType"]').forEach((input) => {
@@ -273,15 +302,14 @@ const initOrderForm = () => {
     const selected = form.querySelector('input[name="orderType"]:checked');
     const payload = {
       items: currentCart.map((item) => ({ menuItem: item.menuItem, quantity: item.quantity })),
-      orderType: selected ? selected.value : 'pickup',
+      orderType: selected ? selected.value : 'dine-in',
       scheduledDate: dateInput.value,
-      timeSlot: timeSelect.value,
-      notes: form.notes.value
+      timeSlot: timeSelect.value
     };
 
     if (payload.orderType === 'delivery') {
-      payload.address = form.address.value;
-      payload.phone = form.phone.value;
+      payload.address = form.address?.value || '';
+      payload.phone = form.phone?.value || '';
     }
 
     if (payload.orderType === 'dine-in') {
@@ -302,6 +330,7 @@ const initOrderForm = () => {
       dateInput.value = today;
       updateOrderTypeFields();
       latestOrder = order;
+      saveLatestOrder(order);
       renderOrderConfirmation(order);
       SF_UI.showToast('Order submitted', 'success');
     } catch (error) {
@@ -313,6 +342,7 @@ const initOrderForm = () => {
 };
 
 const initCartPage = () => {
+  latestOrder = getStoredLatestOrder();
   renderCartPage();
   renderOrderConfirmation(latestOrder);
   initOrderForm();

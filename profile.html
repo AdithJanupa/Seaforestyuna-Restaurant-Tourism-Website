@@ -125,38 +125,6 @@
         </section>
       </section>
 
-      <section class="grid xl:grid-cols-[0.95fr_1.05fr] gap-6 mt-8">
-        <section class="glass-card reveal p-6">
-          <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div>
-              <span class="badge">Activity</span>
-              <h2 class="display text-3xl mt-4">Notifications</h2>
-              <p class="text-white/70 mt-2">Track order and booking updates from your SeaForestuna account.</p>
-            </div>
-            <div class="flex flex-wrap gap-3">
-              <button type="button" id="profileNotificationsRefresh" class="btn-outline">Refresh</button>
-              <button type="button" id="profileNotificationsReadAll" class="btn-primary">Mark All Read</button>
-            </div>
-          </div>
-          <div class="flex items-center justify-between gap-4 mt-5">
-            <p class="text-sm text-white/60">Unread updates</p>
-            <span id="profileNotificationsUnreadCount" class="badge">0</span>
-          </div>
-          <div id="profileNotificationsList" class="space-y-4 mt-6"></div>
-        </section>
-
-        <section class="glass-card reveal p-6">
-          <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div>
-              <span class="badge">Orders</span>
-              <h2 class="display text-3xl mt-4">Recent Food Orders</h2>
-              <p class="text-white/70 mt-2">Review your latest food orders and download the receipt PDF again anytime.</p>
-            </div>
-            <button type="button" id="profileOrdersRefresh" class="btn-outline">Refresh</button>
-          </div>
-          <div id="profileOrdersList" class="space-y-4 mt-6"></div>
-        </section>
-      </section>
     </main>
 
     <footer data-component="footer"></footer>
@@ -168,9 +136,6 @@
     <script src="assets/js/firebase.js"></script>
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/components.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
-    <script src="assets/js/pdf.js"></script>
     <script src="assets/js/profile.js"></script>
   </body>
 </html>

@@ -3,9 +3,10 @@ const { body } = require('express-validator');
 const authJWT = require('../middleware/authJWT');
 const requireRole = require('../middleware/requireRole');
 const validate = require('../middleware/validate');
-const { getCollection, createRecord, updateRecord, getById } = require('../utils/firebaseDb');
+const { getCollection, createRecord, updateRecord, getById, removeRecord } = require('../utils/firebaseDb');
 const { createNotifications } = require('../utils/notifications');
 const { sendOrderReceiptEmail } = require('../utils/mailer');
+const { getMenuAdditions } = require('../utils/menuAdditions');
 
 const router = express.Router();
 
@@ -35,7 +36,7 @@ router.post(
       }
 
       const menuItems = await getCollection('menuItems');
-      const menuMap = new Map(menuItems.map((item) => [item.id || item._id, item]));
+      const menuMap = new Map([...getMenuAdditions(), ...menuItems].map((item) => [item.id || item._id, item]));
 
       const orderItems = items.map((item) => {
         const menuItem = menuMap.get(item.menuItem);
@@ -192,5 +193,15 @@ router.patch(
     }
   }
 );
+
+router.delete('/:id', authJWT, requireRole('admin'), async (req, res, next) => {
+  try {
+    const removed = await removeRecord('orders', req.params.id);
+    if (!removed) return res.status(404).json({ message: 'Order not found' });
+    res.json({ message: 'Order deleted', order: removed });
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = router;

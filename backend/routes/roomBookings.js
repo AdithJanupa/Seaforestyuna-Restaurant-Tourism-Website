@@ -224,9 +224,12 @@ router.delete('/:id', authJWT, async (req, res, next) => {
   try {
     const booking = await getById('roomBookings', req.params.id);
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
-    if (booking.userId !== req.user.uid) return res.status(403).json({ message: 'You can only delete your own booking' });
-    if (!canUserManageBooking(booking)) {
-      return res.status(400).json({ message: 'This booking can no longer be deleted' });
+    const isAdmin = req.user.role === 'admin';
+    if (!isAdmin) {
+      if (booking.userId !== req.user.uid) return res.status(403).json({ message: 'You can only delete your own booking' });
+      if (!canUserManageBooking(booking)) {
+        return res.status(400).json({ message: 'This booking can no longer be deleted' });
+      }
     }
 
     const removed = await removeRecord('roomBookings', req.params.id);

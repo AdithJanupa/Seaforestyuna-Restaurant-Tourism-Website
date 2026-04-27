@@ -158,6 +158,17 @@ const formatOrderType = (value) => {
   return label.charAt(0).toUpperCase() + label.slice(1);
 };
 
+const formatRoleLabel = (value) => {
+  const label = String(value || 'user').trim().toLowerCase();
+  return label ? label.charAt(0).toUpperCase() + label.slice(1) : 'User';
+};
+
+const getUserAccessLabel = (user) => {
+  if (user?.disabled) return 'Disabled';
+  if (user?.hasLoggedIn || user?.lastLoginAt) return 'Logged In';
+  return 'Registered';
+};
+
 const sumBy = (items, accessor) => items.reduce((sum, item) => sum + (Number(accessor(item)) || 0), 0);
 
 const sanitizeFileSegment = (value) =>
@@ -442,6 +453,73 @@ const drawParagraphSection = (doc, title, body, startY) => {
   return startY + boxHeight + 12;
 };
 
+const drawRatingsDistributionChart = (doc, chrome, ratings, startY) => {
+  const chartHeight = 150;
+  let y = startY + 4;
+  let { width, height } = getPageSize(doc);
+
+  if (y + chartHeight > height - PAGE_MARGIN.bottom) {
+    doc.addPage();
+    drawPageChrome(doc, chrome);
+    y = getContentStartY();
+    ({ width, height } = getPageSize(doc));
+  }
+
+  const boxWidth = width - PAGE_MARGIN.left - PAGE_MARGIN.right;
+  const x = PAGE_MARGIN.left;
+  const totalRatings = ratings.length || 1;
+  const distribution = [5, 4, 3, 2, 1].map((stars) => ({
+    stars,
+    count: ratings.filter((rating) => Math.round(Number(rating.rating) || 0) === stars).length
+  }));
+  const maxCount = Math.max(...distribution.map((entry) => entry.count), 1);
+  const labelWidth = 78;
+  const valueWidth = 76;
+  const barX = x + 102;
+  const barWidth = boxWidth - labelWidth - valueWidth - 58;
+  const firstRowY = y + 58;
+
+  doc.setFillColor(...COLORS.surface);
+  doc.setDrawColor(...COLORS.line);
+  doc.roundedRect(x, y, boxWidth, chartHeight, 16, 16, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12.5);
+  doc.setTextColor(...COLORS.ink);
+  doc.text('Rating Distribution Chart', x + 16, y + 24);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9.5);
+  doc.setTextColor(...COLORS.muted);
+  doc.text('Visual breakdown of the filtered customer ratings included in this report.', x + 16, y + 40);
+
+  distribution.forEach((entry, index) => {
+    const rowY = firstRowY + index * 17;
+    const percent = Math.round((entry.count / totalRatings) * 100);
+    const filledWidth = entry.count > 0 ? Math.max((entry.count / maxCount) * barWidth, 8) : 0;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.2);
+    doc.setTextColor(...COLORS.ink);
+    doc.text(`${entry.stars} Star`, x + 18, rowY + 6);
+
+    doc.setFillColor(232, 226, 216);
+    doc.roundedRect(barX, rowY, barWidth, 8, 4, 4, 'F');
+
+    if (filledWidth > 0) {
+      doc.setFillColor(...COLORS.gold);
+      doc.roundedRect(barX, rowY, filledWidth, 8, 4, 4, 'F');
+    }
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.muted);
+    doc.text(`${entry.count} ratings | ${percent}%`, x + boxWidth - 18, rowY + 7, { align: 'right' });
+  });
+
+  return y + chartHeight + 12;
+};
+
 const buildTableOptions = (doc, chrome, options = {}) => {
   const {
     margin = {},
@@ -563,8 +641,9 @@ const downloadOrderReceipt = async (order) => {
     y
   );
 
-  y = drawParagraphSection(doc, 'Order Notes', order.notes || 'No additional notes provided.', y + 4);
-  y = drawParagraphSection(doc, 'Document Note', 'This PDF was generated from the SeaForestuna order system.', y);
+  if (order.notes) {
+    y = drawParagraphSection(doc, 'Order Notes', order.notes, y + 4);
+  }
 
   doc.save(`seaforestuna-receipt-${sanitizeFileSegment(order.orderNumber || order._id)}.pdf`);
 };
@@ -576,7 +655,9 @@ const downloadCollectionReport = async ({
   headers,
   totalRevenue,
   summaryItems = [],
-  orientation = 'portrait'
+  orientation = 'portrait',
+  summaryColumns = null,
+  visualRenderer = null
 }) => {
   if (!Array.isArray(rows) || !rows.length) {
     throw new Error('No records available for this report');
@@ -587,15 +668,18 @@ const downloadCollectionReport = async ({
   drawPageChrome(doc, chrome);
 
   let y = getContentStartY();
-  y = drawKeyValueGrid(
-    doc,
-    [
-      { label: 'Total Revenue', value: formatCurrency(totalRevenue) },
-      ...summaryItems
-    ],
-    y,
-    orientation === 'landscape' ? 3 : 2
-  );
+  const summaryGridItems = [
+    ...(totalRevenue === null || totalRevenue === undefined ? [] : [{ label: 'Total Revenue', value: formatCurrency(totalRevenue) }]),
+    ...summaryItems
+  ];
+
+  if (summaryGridItems.length) {
+    y = drawKeyValueGrid(doc, summaryGridItems, y, summaryColumns || (orientation === 'landscape' ? 3 : 2));
+  }
+
+  if (typeof visualRenderer === 'function') {
+    y = (await visualRenderer(doc, chrome, y)) || y;
+  }
 
   runAutoTable(
     doc,
@@ -631,6 +715,63 @@ const downloadOrderReport = async (orders) => {
         value: String(orders.filter((order) => !['Completed', 'Cancelled'].includes(order.status)).length)
       }
     ]
+  });
+};
+
+const downloadUserReport = async (users) => {
+  const rows = users.map((user) => [
+    user.name || 'No name',
+    user.email || '--',
+    formatRoleLabel(user.role),
+    formatDateTime(user.joinedAt),
+    user.lastLoginAt ? formatDateTime(user.lastLoginAt) : 'Never',
+    getUserAccessLabel(user),
+    user.emailVerified ? 'Verified' : 'Not verified'
+  ]);
+
+  await downloadCollectionReport({
+    title: 'User Management Report',
+    filename: 'seaforestuna-users-report.pdf',
+    headers: ['Name', 'Email', 'Role', 'Joined', 'Last Login', 'Access', 'Email Status'],
+    rows,
+    totalRevenue: null,
+    summaryItems: [
+      { label: 'Total Users', value: String(users.length) },
+      { label: 'Logged In Users', value: String(users.filter((user) => user.hasLoggedIn || user.lastLoginAt).length) },
+      { label: 'Admin Accounts', value: String(users.filter((user) => String(user.role || '').toLowerCase() === 'admin').length) }
+    ],
+    orientation: 'landscape'
+  });
+};
+
+const downloadRatingsReport = async (ratings) => {
+  const averageRating = ratings.length ? (sumBy(ratings, (rating) => rating.rating) / ratings.length).toFixed(1) : '0.0';
+  const rows = ratings.map((rating) => [
+    rating.name || 'Guest',
+    rating.email || '--',
+    rating.visitType || 'General',
+    rating.title || '--',
+    `${Number(rating.rating) || 0}/5`,
+    rating.status || 'Published',
+    rating.isFeatured ? 'Yes' : 'No',
+    formatDateTime(rating.createdAt || rating.updatedAt)
+  ]);
+
+  await downloadCollectionReport({
+    title: 'Ratings Management Report',
+    filename: 'seaforestuna-ratings-report.pdf',
+    headers: ['Guest', 'Email', 'Visit Type', 'Feedback Title', 'Rating', 'Status', 'Featured', 'Submitted'],
+    rows,
+    totalRevenue: null,
+    summaryItems: [
+      { label: 'Total Ratings', value: String(ratings.length) },
+      { label: 'Average Rating', value: `${averageRating}/5` },
+      { label: 'Published Ratings', value: String(ratings.filter((rating) => rating.status === 'Published').length) },
+      { label: 'Featured Ratings', value: String(ratings.filter((rating) => rating.isFeatured).length) }
+    ],
+    orientation: 'landscape',
+    summaryColumns: 4,
+    visualRenderer: (doc, chrome, y) => drawRatingsDistributionChart(doc, chrome, ratings, y)
   });
 };
 
@@ -755,6 +896,8 @@ const downloadBoatBookingReport = async (bookings) => {
 window.SF_PDF = {
   downloadOrderReceipt,
   downloadOrderReport,
+  downloadUserReport,
+  downloadRatingsReport,
   downloadRoomBookingReport,
   downloadBoatBookingReport,
   downloadBookedRoomsPdf,

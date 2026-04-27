@@ -485,8 +485,6 @@ const initProfilePage = async () => {
   if (!canViewProfile) return;
 
   populateProfile();
-  renderNotifications();
-  renderOrders();
 
   const form = document.getElementById('profileForm');
   if (form) {
@@ -497,9 +495,6 @@ const initProfilePage = async () => {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', handleLogout);
   }
-
-  bindActivityActions();
-  await Promise.all([loadNotifications({ silent: true }), loadOrders({ silent: true })]);
 };
 
 document.addEventListener('DOMContentLoaded', initProfilePage);
