@@ -22,6 +22,7 @@ const contactRoutes = require('./routes/contact');
 const inquiryRoutes = require('./routes/inquiries');
 const notificationRoutes = require('./routes/notifications');
 const ratingRoutes = require('./routes/ratings');
+const userRoutes = require('./routes/users');
 
 const app = express();
 
@@ -84,6 +85,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/ratings', ratingRoutes);
+app.use('/api/users', userRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });

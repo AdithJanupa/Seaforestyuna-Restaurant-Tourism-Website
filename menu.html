@@ -58,6 +58,43 @@
       <div class="menu-category-nav" id="menuCategories"></div>
     </section>
 
+    <section class="max-w-7xl mx-auto px-6 pb-10">
+      <div class="menu-finder glass-card reveal">
+        <div class="menu-finder__copy">
+          <span class="badge">Smart Menu Finder</span>
+          <h2 class="display text-3xl mt-3">Find the perfect plate faster</h2>
+          <p class="text-white/70 mt-2">
+            Search by dish name, category, or description, then sort the results before adding items to your cart.
+          </p>
+        </div>
+        <div class="menu-finder__controls">
+          <label class="menu-finder__field" for="menuSearchInput">
+            <span>Search Menu</span>
+            <input id="menuSearchInput" class="input-field" type="search" placeholder="Try prawns, curry, coffee..." />
+          </label>
+          <label class="menu-finder__field" for="menuCategoryFilter">
+            <span>Category</span>
+            <select id="menuCategoryFilter" class="input-field select-field">
+              <option value="all">All categories</option>
+            </select>
+          </label>
+          <label class="menu-finder__field" for="menuSortFilter">
+            <span>Sort By</span>
+            <select id="menuSortFilter" class="input-field select-field">
+              <option value="default">Chef order</option>
+              <option value="price-asc">Price low to high</option>
+              <option value="price-desc">Price high to low</option>
+              <option value="name-asc">Name A to Z</option>
+            </select>
+          </label>
+        </div>
+        <div class="menu-finder__footer">
+          <p id="menuResultSummary">Showing all menu items.</p>
+          <button type="button" class="btn-outline menu-finder__reset" data-menu-reset>Reset Filters</button>
+        </div>
+      </div>
+    </section>
+
     <section class="max-w-7xl mx-auto px-6 pb-16">
       <div class="menu-sections" id="menuList"></div>
     </section>

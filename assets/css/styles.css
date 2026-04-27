@@ -238,6 +238,7 @@ body > section.min-h-screen .max-w-6xl > .space-y-6 > a.btn-outline[href="../ind
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
   border-radius: 999px;
   padding: 0.35rem 1.1rem;
   font-weight: 600;
@@ -247,6 +248,20 @@ body > section.min-h-screen .max-w-6xl > .space-y-6 > a.btn-outline[href="../ind
   text-transform: uppercase;
   letter-spacing: 0.16em;
   white-space: nowrap;
+}
+
+.tab-pill__count {
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding-inline: 0.32rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(200, 164, 106, 0.18);
+  color: var(--sea-400);
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
 }
 
 .tab-pill.active {
@@ -261,6 +276,64 @@ body > section.min-h-screen .max-w-6xl > .space-y-6 > a.btn-outline[href="../ind
   gap: 0.75rem;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
+}
+
+.menu-finder {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  display: grid;
+  gap: 1.3rem;
+}
+
+.menu-finder::before {
+  content: '';
+  position: absolute;
+  inset: -40% 45% auto -12%;
+  height: 220px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(200, 164, 106, 0.24), transparent 68%);
+  pointer-events: none;
+}
+
+.menu-finder__copy,
+.menu-finder__controls,
+.menu-finder__footer {
+  position: relative;
+  z-index: 1;
+}
+
+.menu-finder__controls {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1.35fr) minmax(11rem, 0.8fr) minmax(11rem, 0.8fr);
+  gap: 0.85rem;
+}
+
+.menu-finder__field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.menu-finder__field span {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.menu-finder__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.menu-finder__reset {
+  flex-shrink: 0;
 }
 
 .tab-pill {
@@ -1508,14 +1581,42 @@ select.select-field::-ms-expand {
 }
 
 .site-nav__notifications-shell {
-  position: relative;
-  z-index: 1;
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.site-nav__notifications-shell > .max-w-7xl {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.site-nav__notifications-shell .nav-notification-panel {
+  margin: 0;
+  pointer-events: auto;
 }
 
 .admin-header-notification-shell {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+  z-index: 50;
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
+}
+
+.admin-header-notification-shell > .max-w-7xl {
+  display: block;
+}
+
+.admin-header-notification-shell .nav-notification-panel {
+  pointer-events: auto;
 }
 
 .nav-notification-btn {
@@ -2145,8 +2246,22 @@ html[data-theme="light"] .badge {
   color: #1a1f24;
 }
 
+html[data-theme="light"] .tab-pill__count {
+  background: rgba(184, 139, 77, 0.12);
+  color: #8f6631;
+}
+
 html[data-theme="light"] .menu-category-note {
   color: rgba(26, 31, 36, 0.72);
+}
+
+html[data-theme="light"] .menu-finder__field span,
+html[data-theme="light"] .menu-finder__footer {
+  color: rgba(26, 31, 36, 0.66);
+}
+
+html[data-theme="light"] .menu-finder__footer {
+  border-top-color: rgba(15, 23, 42, 0.08);
 }
 
 html[data-theme="light"] .menu-item-description {
@@ -3068,6 +3183,19 @@ html[data-theme="light"] [class*="text-white/50"] {
     scrollbar-width: thin;
   }
 
+  .menu-finder__controls {
+    grid-template-columns: 1fr;
+  }
+
+  .menu-finder__footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .menu-finder__reset {
+    width: 100%;
+  }
+
   .menu-item-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -3288,7 +3416,20 @@ html[data-theme="light"] [class*="text-white/50"] {
 }
 
 @media (max-width: 640px) {
+  .site-nav__notifications-shell {
+    top: calc(100% + 0.55rem);
+  }
+
+  .site-nav__notifications-shell > .max-w-7xl {
+    justify-content: center;
+    padding-inline: 0.75rem;
+  }
+
   .admin-header-notification-shell {
+    position: relative;
+    top: auto;
+    left: auto;
+    right: auto;
     width: 100%;
   }
 

@@ -41,8 +41,7 @@
           <span class="badge">Cart and Checkout</span>
           <h1 class="display text-5xl">Review Your Cart and Confirm the Journey</h1>
           <p class="text-white/70">
-            Update quantities, choose pickup, dine-in, or delivery, then send your order from one responsive checkout
-            page.
+            Update quantities, add your dine-in details, then send your order from one responsive checkout page.
           </p>
           <div class="action-stack-mobile">
             <a href="menu.html" class="btn-outline">Continue Shopping</a>
@@ -74,22 +73,26 @@
 
     <section class="max-w-7xl mx-auto px-6 pb-20">
       <div class="grid xl:grid-cols-[1.08fr_0.92fr] gap-8 items-start">
-        <div class="glass-card p-6 lg:p-8 reveal">
-          <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div>
-              <span class="badge">Saved Cart</span>
-              <h2 class="display text-3xl mt-4">Your Selected Plates</h2>
+        <div class="space-y-6">
+          <div class="glass-card p-6 lg:p-8 reveal">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <div>
+                <span class="badge">Saved Cart</span>
+                <h2 class="display text-3xl mt-4">Your Selected Plates</h2>
+              </div>
+              <a href="menu.html" class="btn-outline">Add More Items</a>
             </div>
-            <a href="menu.html" class="btn-outline">Add More Items</a>
+
+            <div id="cartEmptyState" class="hidden journey-card text-center">
+              <h3 class="display text-2xl mb-3">Your cart is empty</h3>
+              <p class="text-white/70 mb-5">Start from the menu page to add dining favorites before checkout.</p>
+              <a href="menu.html" class="btn-primary">Browse Menu</a>
+            </div>
+
+            <div id="cartItemList" class="space-y-4"></div>
           </div>
 
-          <div id="cartEmptyState" class="hidden journey-card text-center">
-            <h3 class="display text-2xl mb-3">Your cart is empty</h3>
-            <p class="text-white/70 mb-5">Start from the menu page to add dining favorites before checkout.</p>
-            <a href="menu.html" class="btn-primary">Browse Menu</a>
-          </div>
-
-          <div id="cartItemList" class="space-y-4"></div>
+          <div id="orderConfirmation" class="hidden"></div>
         </div>
 
         <div class="space-y-6 sticky-booking">
@@ -117,18 +120,10 @@
             <form id="orderForm" class="space-y-4">
               <div>
                 <label class="text-sm text-white/70">Order Type</label>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+                <div class="grid grid-cols-1 gap-3 mt-3">
                   <label class="glass-card p-3 flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="orderType" value="pickup" checked />
-                    <span>Pickup</span>
-                  </label>
-                  <label class="glass-card p-3 flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="orderType" value="dine-in" />
+                    <input type="radio" name="orderType" value="dine-in" checked />
                     <span>Dine-in</span>
-                  </label>
-                  <label class="glass-card p-3 flex items-center gap-2 cursor-pointer">
-                    <input type="radio" name="orderType" value="delivery" />
-                    <span>Delivery</span>
                   </label>
                 </div>
               </div>
@@ -146,17 +141,6 @@
                 </div>
               </div>
 
-              <div id="deliveryFields" class="space-y-3 hidden">
-                <div>
-                  <label class="text-sm text-white/70">Delivery Address</label>
-                  <input name="address" type="text" class="input-field mt-1" />
-                </div>
-                <div>
-                  <label class="text-sm text-white/70">Phone</label>
-                  <input name="phone" type="text" class="input-field mt-1" />
-                </div>
-              </div>
-
               <div id="dineInFields" class="space-y-3 hidden">
                 <div>
                   <label class="text-sm text-white/70">Guest Count</label>
@@ -168,13 +152,7 @@
                 </div>
               </div>
 
-              <div>
-                <label class="text-sm text-white/70">Notes</label>
-                <textarea name="notes" class="input-field mt-1" rows="3" placeholder="Allergies, special requests, arrival notes"></textarea>
-              </div>
-
               <button type="submit" id="submitOrderBtn" class="btn-primary w-full">Submit Order</button>
-              <div id="orderConfirmation"></div>
             </form>
           </div>
         </div>

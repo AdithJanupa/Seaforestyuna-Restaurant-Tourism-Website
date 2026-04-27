@@ -1,6 +1,7 @@
 const state = {
   menu: [],
   orders: [],
+  users: [],
   notifications: [],
   rooms: [],
   roomBookings: [],
@@ -13,6 +14,7 @@ const state = {
 
 const filteredViews = {
   orders: [],
+  users: [],
   notifications: [],
   roomBookings: [],
   boatBookings: [],
@@ -23,6 +25,7 @@ const filteredViews = {
 const pagination = {
   menu: 1,
   orders: 1,
+  users: 1,
   notifications: 1,
   rooms: 1,
   roomBookings: 1,
@@ -90,6 +93,17 @@ const formatDateOnly = (value) => {
 const formatOrderType = (value) => {
   const label = String(value || 'pickup').replace(/-/g, ' ');
   return label.charAt(0).toUpperCase() + label.slice(1);
+};
+
+const formatRoleLabel = (value) => {
+  const label = String(value || 'user').trim().toLowerCase();
+  return label ? label.charAt(0).toUpperCase() + label.slice(1) : 'User';
+};
+
+const getUserAccessLabel = (user) => {
+  if (user?.disabled) return 'Disabled';
+  if (user?.hasLoggedIn || user?.lastLoginAt) return 'Logged In';
+  return 'Registered';
 };
 
 const sumBy = (items, accessor) => items.reduce((sum, item) => sum + (Number(accessor(item)) || 0), 0);
@@ -176,6 +190,13 @@ const renderStars = (value) => {
 const renderAdminActions = (type, id) => `
   <button class="text-sea-400 text-sm" data-edit="${type}" data-id="${escapeHtml(id)}">Edit</button>
   <button class="text-red-300 text-sm ml-2" data-delete="${type}" data-id="${escapeHtml(id)}">Delete</button>
+`;
+
+const renderRecordActions = (type, id) => `
+  <div class="flex flex-wrap gap-3">
+    <button class="text-sea-400 text-sm" data-view-record="${escapeHtml(type)}" data-id="${escapeHtml(id)}">View</button>
+    <button class="text-red-300 text-sm" data-delete="${escapeHtml(type)}" data-id="${escapeHtml(id)}">Delete</button>
+  </div>
 `;
 
 const renderRatingAdminActions = (rating) => `
@@ -363,9 +384,10 @@ const loadAll = async () => {
     SF_UI.showLoader();
     adminHeaderNotificationState.status = 'loading';
     renderAdminHeaderNotifications();
-    const [menu, orders, notifications, rooms, roomBookings, boats, boatBookings, inquiries, ratings, content] = await Promise.all([
+    const [menu, orders, users, notifications, rooms, roomBookings, boats, boatBookings, inquiries, ratings, content] = await Promise.all([
       adminApiFetch('/api/menu'),
       adminApiFetch('/api/orders'),
+      adminApiFetch('/api/users'),
       adminApiFetch('/api/notifications/admin'),
       adminApiFetch('/api/rooms'),
       adminApiFetch('/api/room-bookings'),
@@ -378,6 +400,7 @@ const loadAll = async () => {
 
     state.menu = menu;
     state.orders = orders;
+    state.users = users;
     state.notifications = notifications;
     state.rooms = rooms;
     state.roomBookings = roomBookings;
@@ -625,9 +648,9 @@ const renderDashboardQuickLinks = () => {
       target: 'orders'
     },
     {
-      label: 'Notifications',
-      value: `${state.notifications.filter((item) => !item.isRead).length} unread`,
-      target: 'notifications'
+      label: 'Users',
+      value: `${state.users.length} accounts`,
+      target: 'users'
     },
     {
       label: 'Room Bookings',
@@ -699,7 +722,7 @@ const renderDashboardSection = () => {
       label: 'Unread Alerts',
       value: formatCompactNumber(unreadAlerts),
       meta: 'Admin notifications waiting to be reviewed',
-      target: 'notifications'
+      target: 'dashboard'
     },
     {
       label: 'Open Inquiries',
@@ -875,6 +898,160 @@ const openModal = (title, fields, onSubmit) => {
   });
 };
 
+const formatDetailValue = (value) => {
+  if (value === null || value === undefined || value === '') return '--';
+  return String(value);
+};
+
+const formatAdminCurrency = (value) => SF_UTILS.formatCurrency(Number(value) || 0);
+
+const renderDetailGrid = (items) => `
+  <div class="grid md:grid-cols-2 gap-3">
+    ${items
+      .map(
+        (item) => `
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <p class="text-xs uppercase tracking-[0.22em] text-white/45">${escapeHtml(item.label)}</p>
+            <p class="text-sm text-sand-100 mt-2 break-words">${escapeHtml(formatDetailValue(item.value))}</p>
+          </div>
+        `
+      )
+      .join('')}
+  </div>
+`;
+
+const renderDetailTable = (title, headers, rows, emptyLabel) => `
+  <div>
+    <h4 class="display text-xl mb-3">${escapeHtml(title)}</h4>
+    <div class="table-wrap overflow-x-auto">
+      <table>
+        <thead>
+          <tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join('')}</tr>
+        </thead>
+        <tbody>
+          ${
+            rows.length
+              ? rows
+                  .map(
+                    (row) => `
+                      <tr>
+                        ${row.map((cell) => `<td>${escapeHtml(formatDetailValue(cell))}</td>`).join('')}
+                      </tr>
+                    `
+                  )
+                  .join('')
+              : `<tr><td colspan="${headers.length}" class="text-white/55">${escapeHtml(emptyLabel)}</td></tr>`
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+`;
+
+const openDetailsModal = (title, details, extraHtml = '') => {
+  const modal = document.getElementById('adminModal');
+  const content = document.getElementById('adminModalContent');
+  if (!modal || !content) return;
+
+  const closeModal = () => {
+    modal.classList.remove('active');
+    content.innerHTML = '';
+  };
+
+  content.innerHTML = `
+    <div class="space-y-5">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p class="text-xs uppercase tracking-[0.26em] text-sea-300">Record Details</p>
+          <h3 class="display text-3xl mt-2">${escapeHtml(title)}</h3>
+        </div>
+        <button type="button" class="btn-outline" id="modalCancel">Close</button>
+      </div>
+      ${renderDetailGrid(details)}
+      ${extraHtml}
+    </div>
+  `;
+
+  modal.classList.add('active');
+  document.getElementById('modalCancel')?.addEventListener('click', closeModal);
+};
+
+const openRecordDetails = (type, id) => {
+  let record = null;
+  if (type === 'order') record = state.orders.find((entry) => entry._id === id);
+  if (type === 'roomBooking') record = state.roomBookings.find((entry) => entry._id === id);
+  if (type === 'boatBooking') record = state.boatBookings.find((entry) => entry._id === id);
+
+  if (!record) {
+    SF_UI.showToast('Record not found', 'error');
+    return;
+  }
+
+  if (type === 'order') {
+    const itemRows = Array.isArray(record.items)
+      ? record.items.map((item) => [
+          item.name || 'Menu Item',
+          String(Number(item.quantity) || 0),
+          formatAdminCurrency(item.price),
+          formatAdminCurrency((Number(item.price) || 0) * (Number(item.quantity) || 0))
+        ])
+      : [];
+
+    openDetailsModal(
+      `Order ${record.orderNumber || record._id || ''}`,
+      [
+        { label: 'Order Number', value: record.orderNumber },
+        { label: 'Guest Name', value: record.userName || 'Guest' },
+        { label: 'Order Type', value: formatOrderType(record.orderType) },
+        { label: 'Status', value: record.status },
+        { label: 'Scheduled Time', value: formatDateTime(record.scheduledAt) },
+        { label: 'Placed Time', value: formatDateTime(record.createdAt) },
+        { label: 'Last Updated', value: formatDateTime(record.updatedAt) },
+        { label: 'Subtotal', value: formatAdminCurrency(record.subtotal) },
+        { label: 'Tax', value: formatAdminCurrency(record.tax) },
+        { label: 'Total Bill', value: formatAdminCurrency(record.total) },
+        { label: 'Delivery Address', value: record.address },
+        { label: 'Phone', value: record.phone },
+        { label: 'Guest Count', value: record.guestCount },
+        { label: 'Table Preference', value: record.tablePreference },
+        { label: 'Notes', value: record.notes || 'No notes' }
+      ],
+      renderDetailTable('Order Items', ['Item', 'Qty', 'Unit Price', 'Line Total'], itemRows, 'No order items found.')
+    );
+    return;
+  }
+
+  if (type === 'roomBooking') {
+    openDetailsModal(`Room Booking ${record.bookingRef || record._id || ''}`, [
+      { label: 'Booking Reference', value: record.bookingRef },
+      { label: 'Guest Name', value: record.userName || 'Guest' },
+      { label: 'Room', value: record.roomName },
+      { label: 'Check-in', value: formatDateOnly(record.checkIn) },
+      { label: 'Check-out', value: formatDateOnly(record.checkOut) },
+      { label: 'Total Nights', value: record.totalNights },
+      { label: 'Guests', value: record.guests },
+      { label: 'Status', value: record.status },
+      { label: 'Total Bill', value: formatAdminCurrency(record.totalPrice) },
+      { label: 'Last Updated', value: formatDateTime(record.updatedAt) },
+      { label: 'Special Requests', value: record.specialRequests || 'No special requests' }
+    ]);
+    return;
+  }
+
+  openDetailsModal(`Boat Booking ${record.bookingRef || record._id || ''}`, [
+    { label: 'Booking Reference', value: record.bookingRef },
+    { label: 'Guest Name', value: record.userName || 'Guest' },
+    { label: 'Boat Ride', value: record.boatName },
+    { label: 'Ride Date', value: formatDateOnly(record.date) },
+    { label: 'Time Slot', value: record.timeSlot },
+    { label: 'Guests', value: record.guests },
+    { label: 'Status', value: record.status },
+    { label: 'Total Bill', value: formatAdminCurrency(record.totalPrice) },
+    { label: 'Last Updated', value: formatDateTime(record.updatedAt) },
+    { label: 'Special Notes', value: record.specialNotes || 'No special notes' }
+  ]);
+};
+
 const renderMenuSection = () => {
   const list = document.getElementById('menuTable');
   const search = document.getElementById('menuSearch');
@@ -942,13 +1119,66 @@ const renderOrdersSection = () => {
                   ).join('')}
                 </select>
               </td>
+              <td>${renderRecordActions('order', order._id)}</td>
             </tr>
           `
         )
         .join('')
-    : renderEmptyRow(5, 'No orders found.');
+    : renderEmptyRow(6, 'No orders found.');
 
   renderPagination('ordersPagination', 'orders', totalPages, renderOrdersSection);
+};
+
+const renderUsersSection = () => {
+  const list = document.getElementById('usersTable');
+  const search = document.getElementById('usersSearch');
+  const filter = document.getElementById('usersRoleFilter');
+  if (!list) return;
+
+  const query = (search?.value || '').toLowerCase();
+  const role = filter?.value || 'All';
+
+  let filtered = state.users.filter((user) =>
+    `${user.name || ''} ${user.email || ''} ${user.uid || ''}`.toLowerCase().includes(query)
+  );
+
+  if (role !== 'All') {
+    filtered = filtered.filter((user) => String(user.role || 'user').toLowerCase() === role.toLowerCase());
+  }
+
+  filteredViews.users = filtered;
+
+  const { data, totalPages, page } = paginate(filtered, pagination.users);
+  pagination.users = page;
+
+  list.innerHTML = data.length
+    ? data
+        .map(
+          (user) => `
+            <tr>
+              <td>
+                <div class="space-y-1">
+                  <p class="font-semibold text-sand-100">${escapeHtml(user.name || 'No name')}</p>
+                  <p class="text-xs text-white/55">${escapeHtml(user.uid || '--')}</p>
+                </div>
+              </td>
+              <td>
+                <div class="space-y-1">
+                  <p class="font-semibold text-sand-100">${escapeHtml(user.email || '--')}</p>
+                  <p class="text-xs text-white/55">${escapeHtml(user.emailVerified ? 'Email verified' : 'Email not verified')}</p>
+                </div>
+              </td>
+              <td>${renderStatusBadge(formatRoleLabel(user.role))}</td>
+              <td>${escapeHtml(formatDateTime(user.joinedAt))}</td>
+              <td>${escapeHtml(user.lastLoginAt ? formatDateTime(user.lastLoginAt) : 'Never')}</td>
+              <td>${renderStatusBadge(getUserAccessLabel(user))}</td>
+            </tr>
+          `
+        )
+        .join('')
+    : renderEmptyRow(6, 'No users found.');
+
+  renderPagination('usersPagination', 'users', totalPages, renderUsersSection);
 };
 
 const renderNotificationsSection = () => {
@@ -1071,11 +1301,12 @@ const renderRoomBookingsSection = () => {
                   ).join('')}
                 </select>
               </td>
+              <td>${renderRecordActions('roomBooking', booking._id)}</td>
             </tr>
           `
         )
         .join('')
-    : renderEmptyRow(5, 'No room bookings found.');
+    : renderEmptyRow(6, 'No room bookings found.');
 
   renderPagination('roomBookingsPagination', 'roomBookings', totalPages, renderRoomBookingsSection);
 };
@@ -1145,11 +1376,12 @@ const renderBoatBookingsSection = () => {
                   ).join('')}
                 </select>
               </td>
+              <td>${renderRecordActions('boatBooking', booking._id)}</td>
             </tr>
           `
         )
         .join('')
-    : renderEmptyRow(5, 'No boat bookings found.');
+    : renderEmptyRow(6, 'No boat bookings found.');
 
   renderPagination('boatBookingsPagination', 'boatBookings', totalPages, renderBoatBookingsSection);
 };
@@ -1163,7 +1395,6 @@ const renderRatingsSummaryCards = () => {
     ? (publishedRatings.reduce((sum, rating) => sum + (Number(rating.rating) || 0), 0) / publishedRatings.length).toFixed(1)
     : '0.0';
   const featuredRatings = publishedRatings.filter((rating) => rating.isFeatured).length;
-  const openInquiries = state.inquiries.filter((inquiry) => ['New', 'In Progress'].includes(inquiry.status)).length;
 
   container.innerHTML = `
     <div class="glass-card p-5">
@@ -1180,11 +1411,6 @@ const renderRatingsSummaryCards = () => {
       <p class="text-xs uppercase tracking-[0.26em] text-white/55">Featured Ratings</p>
       <p class="display text-4xl mt-3">${featuredRatings}</p>
       <p class="text-white/65 mt-2">Highlighted on the guest-facing ratings experience.</p>
-    </div>
-    <div class="glass-card p-5">
-      <p class="text-xs uppercase tracking-[0.26em] text-white/55">Open Inquiries</p>
-      <p class="display text-4xl mt-3">${openInquiries}</p>
-      <p class="text-white/65 mt-2">Messages still waiting for a reply or follow-up.</p>
     </div>
   `;
 };
@@ -1308,13 +1534,13 @@ const renderAll = () => {
   renderDashboardSection();
   renderMenuSection();
   renderOrdersSection();
+  renderUsersSection();
   renderNotificationsSection();
   renderRoomsSection();
   renderRoomBookingsSection();
   renderBoatsSection();
   renderBoatBookingsSection();
   renderRatingsSummaryCards();
-  renderInquiriesSection();
   renderRatingsSection();
   renderContentSection();
   renderAdminHeaderNotifications();
@@ -1387,6 +1613,8 @@ const markAllNotificationsRead = async () => {
 const downloadReport = async (type) => {
   try {
     if (type === 'orders') return await SF_PDF.downloadOrderReport(filteredViews.orders);
+    if (type === 'users') return await SF_PDF.downloadUserReport(filteredViews.users);
+    if (type === 'ratings') return await SF_PDF.downloadRatingsReport(filteredViews.ratings);
     if (type === 'roomBookings') return await SF_PDF.downloadRoomBookingReport(filteredViews.roomBookings);
     if (type === 'boatBookings') return await SF_PDF.downloadBoatBookingReport(filteredViews.boatBookings);
   } catch (error) {
@@ -1415,6 +1643,7 @@ const openEdit = (type, id = null) => {
       { name: 'description', label: 'Description', type: 'textarea', value: item?.description, required: true, rows: 4 },
       { name: 'price', label: 'Price', type: 'number', value: item?.price, required: true, min: 0, step: '0.01' },
       { name: 'category', label: 'Category', value: item?.category, required: true },
+      { name: 'ingredients', label: 'Ingredients (comma)', value: item?.ingredients?.join(', ') },
       { name: 'image', label: 'Image URL', value: item?.image },
       { name: 'tags', label: 'Tags (comma)', value: item?.tags?.join(', ') },
       { name: 'isAvailable', label: 'Available', type: 'checkbox', value: item?.isAvailable }
@@ -1466,6 +1695,7 @@ const openEdit = (type, id = null) => {
 const saveEntity = async (type, id, data, closeModal) => {
   const payload = { ...data };
   if (payload.tags !== undefined) payload.tags = payload.tags.split(',').map((tag) => tag.trim()).filter(Boolean);
+  if (payload.ingredients !== undefined) payload.ingredients = payload.ingredients.split(',').map((ingredient) => ingredient.trim()).filter(Boolean);
   if (payload.amenities !== undefined) payload.amenities = payload.amenities.split(',').map((amenity) => amenity.trim()).filter(Boolean);
   if (payload.images !== undefined) payload.images = payload.images.split(',').map((image) => image.trim()).filter(Boolean);
   if (payload.timeSlots !== undefined) payload.timeSlots = payload.timeSlots.split(',').map((slot) => slot.trim()).filter(Boolean);
@@ -1504,10 +1734,18 @@ const handleDelete = async (type, id) => {
 
   let endpoint = '';
   if (type === 'menu') endpoint = '/api/menu';
+  if (type === 'order') endpoint = '/api/orders';
   if (type === 'room') endpoint = '/api/rooms';
+  if (type === 'roomBooking') endpoint = '/api/room-bookings';
   if (type === 'boat') endpoint = '/api/boats';
+  if (type === 'boatBooking') endpoint = '/api/boat-bookings';
   if (type === 'inquiry') endpoint = '/api/inquiries';
   if (type === 'rating') endpoint = '/api/ratings';
+
+  if (!endpoint) {
+    SF_UI.showToast('Delete action is not available for this record', 'error');
+    return;
+  }
 
   try {
     SF_UI.showLoader();
@@ -1530,6 +1768,8 @@ const bindActions = () => {
   bindIfPresent('menuSearch', 'input', renderMenuSection);
   bindIfPresent('ordersSearch', 'input', renderOrdersSection);
   bindIfPresent('ordersFilter', 'change', renderOrdersSection);
+  bindIfPresent('usersSearch', 'input', renderUsersSection);
+  bindIfPresent('usersRoleFilter', 'change', renderUsersSection);
   bindIfPresent('notificationsFilter', 'change', renderNotificationsSection);
   bindIfPresent('notificationsRefresh', 'click', loadAll);
   bindIfPresent('notificationsMarkAll', 'click', markAllNotificationsRead);
@@ -1542,24 +1782,24 @@ const bindActions = () => {
   bindIfPresent('boatsSearch', 'input', renderBoatsSection);
   bindIfPresent('boatBookingsSearch', 'input', renderBoatBookingsSection);
   bindIfPresent('boatBookingsFilter', 'change', renderBoatBookingsSection);
-  bindIfPresent('inquiriesSearch', 'input', renderInquiriesSection);
-  bindIfPresent('inquiriesFilter', 'change', renderInquiriesSection);
   bindIfPresent('ratingsSearch', 'input', renderRatingsSection);
   bindIfPresent('ratingsFilter', 'change', renderRatingsSection);
 
   bindIfPresent('ordersReportBtn', 'click', () => downloadReport('orders'));
+  bindIfPresent('usersReportBtn', 'click', () => downloadReport('users'));
+  bindIfPresent('ratingsReportBtn', 'click', () => downloadReport('ratings'));
   bindIfPresent('roomBookingsReportBtn', 'click', () => downloadReport('roomBookings'));
   bindIfPresent('boatBookingsReportBtn', 'click', () => downloadReport('boatBookings'));
 
   bindIfPresent('menuAdd', 'click', () => openEdit('menu'));
   bindIfPresent('roomsAdd', 'click', () => openEdit('room'));
   bindIfPresent('boatsAdd', 'click', () => openEdit('boat'));
-  bindIfPresent('inquiryAdd', 'click', () => openEdit('inquiry'));
 
   const adminContent = document.getElementById('adminContent');
   if (adminContent) {
     adminContent.addEventListener('click', (event) => {
       const dashboardTrigger = event.target.closest('[data-dashboard-target]');
+      const viewTrigger = event.target.closest('[data-view-record]');
       const editTrigger = event.target.closest('[data-edit]');
       const deleteTrigger = event.target.closest('[data-delete]');
       const visibilityTrigger = event.target.closest('[data-rating-visibility]');
@@ -1568,6 +1808,10 @@ const bindActions = () => {
 
       if (dashboardTrigger) {
         setActiveSection(dashboardTrigger.dataset.dashboardTarget);
+      }
+
+      if (viewTrigger) {
+        openRecordDetails(viewTrigger.dataset.viewRecord, viewTrigger.dataset.id);
       }
 
       if (editTrigger) {

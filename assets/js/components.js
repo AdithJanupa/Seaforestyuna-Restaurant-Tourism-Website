@@ -30,13 +30,33 @@ const injectNavbar = () => {
       </svg>
     </span>
   `;
+  const logoutIcon = `
+    <span class="cart-nav-link__icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" role="img">
+        <path d="M15 3a1 1 0 0 1 1 1v3a1 1 0 1 1-2 0V5H8v14h6v-2a1 1 0 1 1 2 0v3a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8Zm1.3 5.3a1 1 0 0 1 1.4 0l3.99 4a1 1 0 0 1 0 1.4l-4 4a1 1 0 1 1-1.4-1.4l2.3-2.3H11a1 1 0 1 1 0-2h7.6l-2.3-2.3a1 1 0 0 1 0-1.4Z" fill="currentColor"/>
+      </svg>
+    </span>
+  `;
   const desktopAuthAction = isLoggedIn
-    ? `<a href="profile.html" class="cart-nav-link cart-nav-link--compact" aria-label="Open profile" title="My Profile">${profileIcon}</a>`
+    ? `
+        <a href="profile.html" class="cart-nav-link cart-nav-link--compact" aria-label="Open profile" title="My Profile">${profileIcon}</a>
+        <button type="button" class="cart-nav-link cart-nav-link--compact" data-nav-logout aria-label="Logout" title="Logout">${logoutIcon}</button>
+      `
     : '<a href="auth.html" class="btn-outline">Login</a>';
   const mobileTopAuthAction = isLoggedIn
-    ? `<a href="profile.html" class="cart-nav-link cart-nav-link--compact" aria-label="Open profile" title="My Profile">${profileIcon}</a>`
+    ? `
+        <a href="profile.html" class="cart-nav-link cart-nav-link--compact" aria-label="Open profile" title="My Profile">${profileIcon}</a>
+        <button type="button" class="cart-nav-link cart-nav-link--compact" data-nav-logout aria-label="Logout" title="Logout">${logoutIcon}</button>
+      `
     : '';
-  const mobileMenuAuthAction = isLoggedIn ? '' : '<a href="auth.html" class="btn-outline">Login</a>';
+  const mobileMenuAuthAction = isLoggedIn
+    ? `
+        <a href="profile.html" class="cart-nav-link cart-nav-link--menu">
+          ${profileIcon}
+          <span class="cart-nav-link__label">Profile</span>
+        </a>
+      `
+    : '<a href="auth.html" class="btn-outline">Login</a>';
 
   target.innerHTML = `
     <nav class="nav-blur fixed top-0 left-0 right-0 z-50">
@@ -137,6 +157,7 @@ const injectNavbar = () => {
   `;
 
   initCartNav();
+  initNavbarAuthActions();
   initNavbarNotifications({ silent: true });
 };
 
@@ -252,6 +273,7 @@ const navbarNotificationsState = {
 };
 
 let navbarNotificationsBound = false;
+let navbarAuthBound = false;
 
 const escapeNotificationHtml = (value) =>
   String(value ?? '')
@@ -495,6 +517,38 @@ const initNavbarNotifications = ({ silent = true } = {}) => {
     if (event.key === 'Escape' && navbarNotificationsState.open) {
       setNavbarNotificationsOpen(false);
     }
+  });
+};
+
+const handleNavbarLogout = async () => {
+  try {
+    if (window.SF_FIREBASE && typeof window.SF_FIREBASE.signOut === 'function') {
+      await window.SF_FIREBASE.signOut();
+    } else if (window.SF_UTILS && typeof SF_UTILS.clearAuth === 'function') {
+      SF_UTILS.clearAuth();
+    }
+
+    if (window.SF_UTILS && typeof SF_UTILS.clearAdminAuth === 'function') {
+      SF_UTILS.clearAdminAuth();
+    }
+
+    window.location.href = 'auth.html#login';
+  } catch (error) {
+    if (window.SF_UI && typeof SF_UI.showToast === 'function') {
+      SF_UI.showToast('Unable to logout', 'error');
+    }
+  }
+};
+
+const initNavbarAuthActions = () => {
+  if (navbarAuthBound) return;
+  navbarAuthBound = true;
+
+  document.addEventListener('click', (event) => {
+    const logoutButton = event.target.closest('[data-nav-logout]');
+    if (!logoutButton) return;
+    event.preventDefault();
+    handleNavbarLogout();
   });
 };
 
