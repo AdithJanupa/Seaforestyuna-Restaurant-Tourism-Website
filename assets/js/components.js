@@ -77,7 +77,6 @@ const injectNavbar = () => {
           <a href="boat.html" class="nav-link">Boat Rides</a>
           <a href="about.html" class="nav-link">About</a>
           <a href="services.html" class="nav-link">Ratings</a>
-          <a href="contact.html" class="nav-link">Contact</a>
           <a href="cart.html" class="cart-nav-link cart-nav-link--compact" aria-label="View cart">
             <span class="cart-nav-link__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" role="img">
@@ -116,7 +115,6 @@ const injectNavbar = () => {
           <a href="boat.html" class="nav-link">Boat Rides</a>
           <a href="about.html" class="nav-link">About</a>
           <a href="services.html" class="nav-link">Ratings</a>
-          <a href="contact.html" class="nav-link">Contact</a>
           <a href="cart.html" class="cart-nav-link cart-nav-link--menu">
             <span class="cart-nav-link__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" role="img">
